@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/homebg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textview2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:text="AMOUNT DUE:"
+            android:textColor="@color/viewfinder_laser"
+            android:textSize="20sp"
+            android:textStyle="normal|italic" />
+
+        <TextView
+            android:id="@+id/amountDueTV"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center|center_horizontal|center_vertical"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:text=" "
+            android:textColor="@color/sc_red"
+            android:textSize="50sp"
+            android:textStyle="bold|italic" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textview13"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="Card Number"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/textview14"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="PlateNumber"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/textview16"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="Date / Time IN"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/textview17"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="Date / Time OUT"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/textview15"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="Duration"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/textview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="Gross Sales"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/line1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="VATable Sales"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/line2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="VAT Amount (12%)"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/line3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text="VAT Exempt Sales"
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/line4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text=""
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/line5"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:text=""
+                    android:textColor="@color/a_normal"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/cardTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textAllCaps="true"
+                    android:textColor="@color/baseColor"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/plateTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textAllCaps="true"
+                    android:textColor="@color/baseColor"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/TimeINTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textAlignment="viewStart"
+                    android:textAllCaps="true"
+                    android:textColor="@color/baseColor"
+                    android:textSize="16sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/TimeOUTTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textAlignment="viewStart"
+                    android:textAllCaps="true"
+                    android:textColor="@color/baseColor"
+                    android:textSize="16sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/durationTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textAlignment="viewStart"
+                    android:textAllCaps="true"
+                    android:textColor="@color/baseColor"
+                    android:textSize="16sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/grossSalesTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textColor="@color/baseColor"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/computation1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textColor="@color/baseColor"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/computation2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textColor="@color/baseColor"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/computation3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textColor="@color/baseColor"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/computation4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textColor="@color/baseColor"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+                <TextView
+                    android:id="@+id/computation5"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:textColor="@color/baseColor"
+                    android:textSize="20sp"
+                    android:textStyle="normal|italic" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/printBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="Confirm" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,239 @@
+package com.theoretics.mobilepos.bean;
+
+import com.theoretics.mobilepos.util.GLOBALS;
+
+public class RECEIPT {
+
+    private static RECEIPT instance;
+    private String receiptNum;
+
+    private String entID = "";
+    private String location = "";
+
+    private String cashierName = "";
+    private String cashierID = "";
+    private String loginDate = "";
+
+    private String plateNum = "";
+    private String pType = "";
+    private String daysElapsed = "";
+    private String hoursElapsed = "";
+    private String minutesElapsed = "";
+    private String datetimeIN = "";
+    private String datetimeOUT = "";
+    private String duration = "";
+
+    private String amountGross = "";
+    private String discount = "";
+
+    boolean isDiscounted = false;
+    private String AmountDue = "";
+    private String AmountGross = "";
+    private String NetOfVAT = "";
+    private String NetOfDiscount = "";
+    private String vat12 = "";
+    private String vatsale = "";
+    private String vatExemptedSales = "";
+    private String vatAdjustment = "";
+
+    public RECEIPT(){}
+
+    public static synchronized RECEIPT getInstance() {
+        if(instance == null) {
+            instance = new RECEIPT();
+        }
+        return instance;
+    }
+
+    public String getReceiptNum() {
+        return receiptNum;
+    }
+
+    public void setReceiptNum(String receiptNum) {
+        this.receiptNum = receiptNum;
+    }
+
+    public String getEntID() {
+        return entID;
+    }
+
+    public void setEntID(String entID) {
+        this.entID = entID;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getCashierName() {
+        return cashierName;
+    }
+
+    public void setCashierName(String cashierName) {
+        this.cashierName = cashierName;
+    }
+
+    public String getCashierID() {
+        return cashierID;
+    }
+
+    public void setCashierID(String cashierID) {
+        this.cashierID = cashierID;
+    }
+
+    public String getLoginDate() {
+        return loginDate;
+    }
+
+    public void setLoginDate(String loginDate) {
+        this.loginDate = loginDate;
+    }
+
+    public String getPlateNum() {
+        return plateNum;
+    }
+
+    public void setPlateNum(String plateNum) {
+        this.plateNum = plateNum;
+    }
+
+    public String getpType() {
+        return pType;
+    }
+
+    public void setpType(String pType) {
+        this.pType = pType;
+    }
+
+    public String getDaysElapsed() {
+        return daysElapsed;
+    }
+
+    public void setDaysElapsed(String daysElapsed) {
+        this.daysElapsed = daysElapsed;
+    }
+
+    public String getHoursElapsed() {
+        return hoursElapsed;
+    }
+
+    public void setHoursElapsed(String hoursElapsed) {
+        this.hoursElapsed = hoursElapsed;
+    }
+
+    public String getMinutesElapsed() {
+        return minutesElapsed;
+    }
+
+    public void setMinutesElapsed(String minutesElapsed) {
+        this.minutesElapsed = minutesElapsed;
+    }
+
+    public String getDatetimeIN() {
+        return datetimeIN;
+    }
+
+    public void setDatetimeIN(String datetimeIN) {
+        this.datetimeIN = datetimeIN;
+    }
+
+    public String getDatetimeOUT() {
+        return datetimeOUT;
+    }
+
+    public void setDatetimeOUT(String datetimeOUT) {
+        this.datetimeOUT = datetimeOUT;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
+    public String getAmountGross() {
+        return amountGross;
+    }
+
+    public void setAmountGross(String amountGross) {
+        this.amountGross = amountGross;
+    }
+
+    public String getNetOfVAT() {
+        return NetOfVAT;
+    }
+
+    public void setNetOfVAT(String netOfVAT) {
+        NetOfVAT = netOfVAT;
+    }
+
+    public String getNetOfDiscount() {
+        return NetOfDiscount;
+    }
+
+    public void setNetOfDiscount(String netOfDiscount) {
+        NetOfDiscount = netOfDiscount;
+    }
+
+    public String getVat12() {
+        return vat12;
+    }
+
+    public void setVat12(String vat12) {
+        this.vat12 = vat12;
+    }
+
+    public String getVatsale() {
+        return vatsale;
+    }
+
+    public void setVatsale(String vatsale) {
+        this.vatsale = vatsale;
+    }
+
+    public String getVatExemptedSales() {
+        return vatExemptedSales;
+    }
+
+    public void setVatExemptedSales(String vatExemptedSales) {
+        this.vatExemptedSales = vatExemptedSales;
+    }
+
+    public String getVatAdjustment() {
+        return vatAdjustment;
+    }
+
+    public void setVatAdjustment(String vatAdjustment) {
+        this.vatAdjustment = vatAdjustment;
+    }
+
+    public String getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(String discount) {
+        this.discount = discount;
+    }
+
+    public String getAmountDue() {
+        return AmountDue;
+    }
+
+    public void setAmountDue(String amountDue) {
+        AmountDue = amountDue;
+    }
+
+    public boolean isDiscounted() {
+        return isDiscounted;
+    }
+
+    public void setDiscounted(boolean discounted) {
+        isDiscounted = discounted;
+    }
+}
