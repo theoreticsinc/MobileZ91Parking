@@ -109,6 +109,7 @@ public class ComputationActivity extends BaseActivity {
         int minsRemaining = myIntent.getIntExtra("minsRemaining", 0);
 
         String cardNum = myIntent.getStringExtra("cardNum");
+        GLOBALS.getInstance().setCardNumber(cardNum);
         String inputPlate= myIntent.getStringExtra("inputPlate");
         String minsElapsed= myIntent.getStringExtra("minsElapsed");
 
@@ -235,6 +236,7 @@ public class ComputationActivity extends BaseActivity {
     }
 
     private void printOnly(String text, int fontSize, boolean isBold, PrintItemObj.ALIGN align) {
+        obj2Print.clear();
         obj2Print.add(new PrintItemObj(text, fontSize,isBold, align));
         try {
             if (isLedOn) {
@@ -282,7 +284,7 @@ public class ComputationActivity extends BaseActivity {
             printOnly("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Ent ID.      : " + RECEIPT.getInstance().getEntID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Cashier Name : " + RECEIPT.getInstance().getCashierName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
-                printOnly("Location     : " + RECEIPT.getInstance().getLocation(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+                printOnly("Location     : " + RECEIPT.getInstance().getExitID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Plate Number : " + RECEIPT.getInstance().getPlateNum(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Parker Type  : " + RECEIPT.getInstance().getpType(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("TIME IN      : " + RECEIPT.getInstance().getDatetimeIN(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
@@ -363,7 +365,7 @@ public class ComputationActivity extends BaseActivity {
             printNsave("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Ent ID.      : " + GLOBALS.getInstance().getEntID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Cashier Name : " + GLOBALS.getInstance().getCashierName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
-            printNsave("Location     : " + CONSTANTS.getInstance().getLocation(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+            printNsave("Location     : " + CONSTANTS.getInstance().getExitID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Plate Number : " + GLOBALS.getInstance().getPlateNum(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Parker Type  : " + GLOBALS.getInstance().getpType(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("TIME IN      : " + GLOBALS.getInstance().getDatetimeIN(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
@@ -416,12 +418,69 @@ public class ComputationActivity extends BaseActivity {
                     //sendmessage(getStringByid(R.string.print_end) + endTime);
                     updateReceiptNumber();
                     GLOBALS.getInstance().setNewCard(false);
+                    saveTransaction(RECEIPT.getInstance().getReceiptNum(),
+                            RECEIPT.getInstance().getCashierName(),
+                            RECEIPT.getInstance().getEntID(),
+                            RECEIPT.getInstance().getExitID(),
+                            RECEIPT.getInstance().getCardNumber(),
+                            RECEIPT.getInstance().getPlateNum(),
+                            RECEIPT.getInstance().getpType(),
+                            RECEIPT.getInstance().getNetOfDiscount(),
+                            RECEIPT.getInstance().getAmountDue()+ "",
+                            RECEIPT.getInstance().getAmountGross(),
+                            RECEIPT.getInstance().getDiscount(),
+                            RECEIPT.getInstance().getVatAdjustment(),
+                            RECEIPT.getInstance().getVat12(),
+                            RECEIPT.getInstance().getVatsale(),
+                            RECEIPT.getInstance().getVatExemptedSales(),
+                            RECEIPT.getInstance().getTendered(),
+                            RECEIPT.getInstance().getChangeDue(),
+                            RECEIPT.getInstance().getDatetimeIN(),
+                            RECEIPT.getInstance().getDatetimeOUT(),
+                            RECEIPT.getInstance().getHoursElapsed(),
+                            RECEIPT.getInstance().getMinutesElapsed(),
+                            RECEIPT.getInstance().getSettlementRef(),
+                            RECEIPT.getInstance().getSettlementName(),
+                            RECEIPT.getInstance().getSettlementAddr(),
+                            RECEIPT.getInstance().getSettlementTIN(),
+                            RECEIPT.getInstance().getSettlementBusStyle());
 
+                    updateXRead();
                 }
 
                 @Override
                 public void onError(int arg0) throws RemoteException {
                     //sendmessage(getStringByid(R.string.print_faile_errcode) + arg0);
+                    updateReceiptNumber();
+                    GLOBALS.getInstance().setNewCard(false);
+                    saveTransaction(RECEIPT.getInstance().getReceiptNum(),
+                            RECEIPT.getInstance().getCashierName(),
+                            RECEIPT.getInstance().getEntID(),
+                            RECEIPT.getInstance().getExitID(),
+                            RECEIPT.getInstance().getCardNumber(),
+                            RECEIPT.getInstance().getPlateNum(),
+                            RECEIPT.getInstance().getpType(),
+                            RECEIPT.getInstance().getNetOfDiscount(),
+                            RECEIPT.getInstance().getAmountDue()+ "",
+                            RECEIPT.getInstance().getAmountGross(),
+                            RECEIPT.getInstance().getDiscount(),
+                            RECEIPT.getInstance().getVatAdjustment(),
+                            RECEIPT.getInstance().getVat12(),
+                            RECEIPT.getInstance().getVatsale(),
+                            RECEIPT.getInstance().getVatExemptedSales(),
+                            RECEIPT.getInstance().getTendered(),
+                            RECEIPT.getInstance().getChangeDue(),
+                            RECEIPT.getInstance().getDatetimeIN(),
+                            RECEIPT.getInstance().getDatetimeOUT(),
+                            RECEIPT.getInstance().getHoursElapsed(),
+                            RECEIPT.getInstance().getMinutesElapsed(),
+                            RECEIPT.getInstance().getSettlementRef(),
+                            RECEIPT.getInstance().getSettlementName(),
+                            RECEIPT.getInstance().getSettlementAddr(),
+                            RECEIPT.getInstance().getSettlementTIN(),
+                            RECEIPT.getInstance().getSettlementBusStyle());
+
+                    updateXRead();
                 }
             });
 
@@ -430,11 +489,150 @@ public class ComputationActivity extends BaseActivity {
         }
     }
 
+    public void updateXRead () {
+        DBHelper dbh = new DBHelper(getApplicationContext());
+
+        //=================================Count==============================
+        int currentCarServed = dbh.getImptCount("carServed");
+        dbh.setImptCount("carServed", currentCarServed);
+
+        int grossCount = dbh.getImptCount("grossCount");
+        dbh.setImptCount("grossCount", grossCount);
+
+        int vat12Count = dbh.getImptCount("vat12Count");
+        dbh.setImptCount("vat12Count", vat12Count);
+
+        int vatsaleCount = dbh.getImptCount("vatsaleCount");
+        dbh.setImptCount("vatsaleCount", vatsaleCount);
+
+        if (isDiscounted) {
+            if (GLOBALS.getInstance().getpType().compareToIgnoreCase("S") == 0) {
+                int vatExemptedSalesCount = dbh.getImptCount("vatExemptedSalesCount");
+                dbh.setImptCount("vatExemptedSalesCount", vatExemptedSalesCount);
+                int seniorDiscountCount = dbh.getImptCount("seniorDiscountCount");
+                dbh.setImptCount("seniorDiscountCount", seniorDiscountCount);
+                int vatAdjSeniorCount = dbh.getImptCount("vatAdjSeniorCount");
+                dbh.setImptCount("vatAdjSeniorCount", vatAdjSeniorCount);
+                int vat12SeniorCount = dbh.getImptCount("vat12SeniorCount");
+                dbh.setImptCount("vat12SeniorCount", vat12SeniorCount);
+                int seniorCount = dbh.getImptCount("seniorCount");
+                dbh.setImptCount("seniorCount", seniorCount);
+            } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("PW") == 0) {
+                int vatExemptedSalesCount = dbh.getImptCount("vatExemptedSalesCount");
+                dbh.setImptCount("vatExemptedSalesCount", vatsaleCount);
+                int pwdDiscountCount = dbh.getImptCount("pwdDiscountCount");
+                dbh.setImptCount("pwdDiscountCount", pwdDiscountCount);
+                int vatAdjPWDCount = dbh.getImptCount("vatAdjPWDCount");
+                dbh.setImptCount("vatAdjPWDCount", vatAdjPWDCount);
+                int vat12PWDCount = dbh.getImptCount("vat12PWDCount");
+                dbh.setImptCount("vat12PWDCount", vat12PWDCount);
+                int pwdCount = dbh.getImptCount("pwdCount");
+                dbh.setImptCount("pwdCount", pwdCount);
+            }
+        } else {
+            if (GLOBALS.getInstance().getpType().compareToIgnoreCase("V") == 0) {
+                int regularCount = dbh.getImptCount("regularCount");
+                dbh.setImptCount("regularCount", regularCount);
+            } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("R") == 0) {
+                int regularCount = dbh.getImptCount("regularCount");
+                dbh.setImptCount("regularCount", regularCount);
+            } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("RM") == 0) {
+                int mabregularCount = dbh.getImptCount("mabregularCount");
+                dbh.setImptCount("mabregularCount", mabregularCount);
+            }
+            else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("G") == 0) {
+                int graceperiodCount = dbh.getImptCount("graceperiodCount");
+                dbh.setImptCount("graceperiodCount", graceperiodCount);
+            }
+            else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("L") == 0) {
+                int graceperiodCount = dbh.getImptCount("graceperiodCount");
+                dbh.setImptCount("graceperiodCount", graceperiodCount);
+            }
+            else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("DS") == 0) {
+                int dialysisCount = dbh.getImptCount("dialysisCount");
+                dbh.setImptCount("dialysisCount", dialysisCount);
+            }
+        }
+        //=================================Amount==============================
+        double currentAmount = dbh.getImptAmount("totalAmount");
+        dbh.setImptAmount("totalAmount", currentAmount + GLOBALS.getInstance().getAmountDue());
+
+        double grossAmount = dbh.getImptAmount("grossAmount");
+        dbh.setImptAmount("grossAmount", grossAmount + GLOBALS.getInstance().getAmountGross());
+
+        double vat12Amount = dbh.getImptAmount("vat12Amount");
+        dbh.setImptAmount("vat12Amount", grossAmount + GLOBALS.getInstance().getVat12());
+
+        if (isDiscounted) {
+            if (GLOBALS.getInstance().getpType().compareToIgnoreCase("S") == 0) {
+                double vatExemptedSalesAmount = dbh.getImptAmount("vatExemptedSalesAmount");
+                dbh.setImptAmount("vatExemptedSalesAmount", vatExemptedSalesAmount + GLOBALS.getInstance().getVatExemptedSales());
+                double seniorDiscountAmount = dbh.getImptAmount("seniorDiscountAmount");
+                dbh.setImptAmount("seniorDiscountAmount", seniorDiscountAmount + GLOBALS.getInstance().getDiscount());
+                double vatAdjSeniorAmount = dbh.getImptAmount("vatAdjSeniorAmount");
+                dbh.setImptAmount("vatAdjSeniorAmount", vatAdjSeniorAmount + GLOBALS.getInstance().getVatAdjustment());
+                double vat12SeniorAmount = dbh.getImptAmount("vat12SeniorAmount");
+                dbh.setImptAmount("vat12SeniorAmount", vat12SeniorAmount + GLOBALS.getInstance().getVat12());
+                double seniorAmount = dbh.getImptAmount("seniorAmount");
+                dbh.setImptAmount("seniorAmount", seniorAmount + GLOBALS.getInstance().getAmountDue());
+            } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("PW") == 0) {
+                double vatExemptedSalesAmount = dbh.getImptAmount("vatExemptedSalesAmount");
+                dbh.setImptAmount("vatExemptedSalesAmount", vatExemptedSalesAmount + GLOBALS.getInstance().getVatExemptedSales());
+                double pwdDiscountAmount = dbh.getImptAmount("pwdDiscountAmount");
+                dbh.setImptAmount("pwdDiscountAmount", pwdDiscountAmount + GLOBALS.getInstance().getDiscount());
+                double vatAdjPWDAmount = dbh.getImptAmount("vatAdjPWDAmount");
+                dbh.setImptAmount("vatAdjPWDAmount", vatAdjPWDAmount + GLOBALS.getInstance().getVatAdjustment());
+                double vat12PWDAmount = dbh.getImptAmount("vat12PWDAmount");
+                dbh.setImptAmount("vat12PWDAmount", vat12PWDAmount + GLOBALS.getInstance().getVat12());
+                double pwdAmount = dbh.getImptAmount("pwdAmount");
+                dbh.setImptAmount("pwdAmount", pwdAmount + GLOBALS.getInstance().getAmountDue());
+            }
+        } else {
+            if (GLOBALS.getInstance().getpType().compareToIgnoreCase("V") == 0) {
+                double vipAmount = dbh.getImptAmount("vipAmount");
+                dbh.setImptAmount("vipAmount", vipAmount);
+            } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("R") == 0) {
+                double regularAmount = dbh.getImptAmount("regularAmount");
+                dbh.setImptAmount("regularAmount", regularAmount);
+            } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("RM") == 0) {
+                double mabregularAmount = dbh.getImptAmount("mabregularAmount");
+                dbh.setImptAmount("mabregularAmount", mabregularAmount);
+            }
+            else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("G") == 0) {
+                double graceperiodAmount = dbh.getImptAmount("graceperiodAmount");
+                dbh.setImptAmount("graceperiodAmount", graceperiodAmount);
+            }
+            else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("L") == 0) {
+                double lostAmount = dbh.getImptAmount("lostAmount");
+                dbh.setImptAmount("lostAmount", lostAmount);
+            }
+            else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("DS") == 0) {
+                double dialysisAmount = dbh.getImptAmount("dialysisAmount");
+                dbh.setImptAmount("dialysisAmount", dialysisAmount);
+            }
+        }
+
+    }
+
+    private void saveTransaction(String ReceiptNumber,String CashierName, String EntranceID,
+                                 String ExitID, String CardNumber, String PlateNumber, String ParkerType,
+                                 String NetOfDiscount, String Amount, String GrossAmount, String discount,
+                                 String vatAdjustment, String vat12, String vatsale, String vatExemptedSales,
+                                 String tendered, String changeDue, String DateTimeIN, String DateTimeOUT,
+                                 String HoursParked, String MinutesParked, String SettlementRef,
+                                 String SettlementName, String SettlementAddr, String SettlementTIN, String SettlementBusStyle) {
+        DBHelper dbh = new DBHelper(getApplicationContext());
+        dbh.saveEXTransaction(ReceiptNumber, CashierName, EntranceID, ExitID, CardNumber, PlateNumber, ParkerType, NetOfDiscount,
+                Amount, GrossAmount, discount, vatAdjustment, vat12, vatsale, vatExemptedSales, tendered, changeDue,
+                DateTimeIN, DateTimeOUT, HoursParked, MinutesParked,
+                SettlementRef, SettlementName, SettlementAddr, SettlementTIN, SettlementBusStyle);
+    }
+
     private void saveReceipt2Memory(String recNum) {
         RECEIPT.getInstance().setReceiptNum(recNum);
         RECEIPT.getInstance().setEntID(GLOBALS.getInstance().getEntID());
         RECEIPT.getInstance().setCashierName(GLOBALS.getInstance().getCashierName());
-        RECEIPT.getInstance().setLocation(GLOBALS.getInstance().getLocation());
+        RECEIPT.getInstance().setExitID(GLOBALS.getInstance().getExitID());
         RECEIPT.getInstance().setPlateNum(GLOBALS.getInstance().getPlateNum());
         RECEIPT.getInstance().setpType(GLOBALS.getInstance().getpType());
         RECEIPT.getInstance().setDatetimeIN(GLOBALS.getInstance().getDatetimeIN());
@@ -455,7 +653,7 @@ public class ComputationActivity extends BaseActivity {
             RECEIPT.getInstance().setVat12(df2.format(ca.vat12));
         }
 
-        RECEIPT.getInstance().setAmountDue(df2.format(ca.AmountDue));
+        RECEIPT.getInstance().setAmountDue(ca.AmountDue + "");
 
     }
 
@@ -465,7 +663,7 @@ public class ComputationActivity extends BaseActivity {
         int receiptNumber = dbh.getRNosData(DBHelper.MASTER_COLUMN_RECEIPTNOS);
         rNos = formatNos("" + receiptNumber);
         GLOBALS.getInstance().setReceiptNum(receiptNumber);
-        return CONSTANTS.getInstance().getLocation() + rNos;
+        return CONSTANTS.getInstance().getExitID() + rNos;
     }
 
     private void updateReceiptNumber() {

@@ -7,8 +7,6 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.theoretics.mobilepos.MobileTheoreticsApplication;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -41,6 +39,13 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CARD_COLUMN_PLATE = "Plate";
     public static final String CARD_COLUMN_CARDCODE = "CardCode";
     public static final String CARD_COLUMN_LANE = "Lane";
+
+    public static final String EXIT_TABLE_NAME = "exit_trans";
+
+    public static final String XREAD_TABLE_NAME = "colltrain";
+    public static final String ZREAD_TABLE_NAME = "zread";
+    public static final String XREAD_COLUMN_LOGINID = "logINID";
+
 
     public static final String GIN_TABLE_NAME = "gin";
     public static final String GIN_COLUMN_CASHIERID = "cashierID";
@@ -125,8 +130,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 "SettlementTIN text, " +
                 "SettlementBusStyle text)");
 
-        db.execSQL("CREATE TABLE colltrain " +
-                "(logINID text," +
+        db.execSQL("CREATE TABLE " + XREAD_TABLE_NAME +
+                "(logINID text primary key," +
                 "SentinelID text," +
                 "userCode text," +
                 "userName text," +
@@ -213,8 +218,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 "  sentinelID text," +
                 "  dt DATETIME)");
 
-        db.execSQL("CREATE TABLE zread (" +
-                "  terminalnum text," +
+        db.execSQL("CREATE TABLE " + ZREAD_TABLE_NAME +
+                "  (terminalnum text," +
                 "  datetimeOut datetime ," +
                 "  datetimeIn datetime," +
                 "  todaysale real ," +
@@ -238,7 +243,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "  overrage real," +
                 "  zCount integer," +
                 "  tellerCode text," +
-                "  logINID text" +
+                "  logINID text primary key" +
                 ")");
         
         db.execSQL("create table " + NET_MANAGER_TABLE_NAME +
@@ -273,14 +278,151 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
-        db.execSQL("DROP TABLE IF EXISTS "+ VIP_TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS "+ GIN_TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS "+ MASTER_TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS "+ POS_TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS "+ CARD_TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS "+ NET_MANAGER_TABLE_NAME);
-        onCreate(db);
+        //db.execSQL("DROP TABLE IF EXISTS "+ VIP_TABLE_NAME);
+        //db.execSQL("DROP TABLE IF EXISTS "+ GIN_TABLE_NAME);
+        //db.execSQL("DROP TABLE IF EXISTS "+ MASTER_TABLE_NAME);
+        //db.execSQL("DROP TABLE IF EXISTS "+ POS_TABLE_NAME);
+        //db.execSQL("DROP TABLE IF EXISTS "+ CARD_TABLE_NAME);
+        //db.execSQL("DROP TABLE IF EXISTS "+ NET_MANAGER_TABLE_NAME);
+        //onCreate(db);
     }
+
+    public void saveEXTransaction(String ReceiptNumber,String CashierName, String EntranceID,
+                                  String ExitID, String CardNumber, String PlateNumber, String ParkerType,
+                                  String NetOfDiscount, String Amount, String GrossAmount, String discount,
+                                  String vatAdjustment, String vat12, String vatsale, String vatExemptedSales,
+                                  String tendered, String changeDue, String DateTimeIN, String DateTimeOUT,
+                                  String HoursParked, String MinutesParked, String SettlementRef,
+                                  String SettlementName, String SettlementAddr, String SettlementTIN, String SettlementBusStyle) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("ReceiptNumber", ReceiptNumber);
+        contentValues.put("CashierName", CashierName);
+        contentValues.put("EntranceID", EntranceID);
+        contentValues.put("ExitID", ExitID);
+        contentValues.put("CardNumber", CardNumber);
+        contentValues.put("PlateNumber", PlateNumber);
+        contentValues.put("ParkerType", ParkerType);
+        contentValues.put("NetOfDiscount", NetOfDiscount);
+        contentValues.put("Amount", Amount);
+        contentValues.put("GrossAmount", GrossAmount);
+        contentValues.put("discount", discount);
+        contentValues.put("vatAdjustment", vatAdjustment);
+        contentValues.put("vat12", vat12);
+        contentValues.put("vatsale", vatsale);
+        contentValues.put("vatExemptedSales", vatExemptedSales);
+        contentValues.put("tendered", tendered);
+        contentValues.put("changeDue", changeDue);
+        contentValues.put("DateTimeIN", DateTimeIN);
+        contentValues.put("DateTimeOUT", DateTimeOUT);
+        contentValues.put("HoursParked", HoursParked);
+        contentValues.put("MinutesParked", MinutesParked);
+        contentValues.put("SettlementRef", SettlementRef);
+        contentValues.put("SettlementName", SettlementName);
+        contentValues.put("SettlementAddr", SettlementAddr);
+        contentValues.put("SettlementTIN", SettlementTIN);
+        contentValues.put("SettlementBusStyle", SettlementBusStyle);
+
+        db.insert(EXIT_TABLE_NAME, null, contentValues);
+    }
+
+    public boolean createXRead () {
+        Date now = new Date();
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        final SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        //contentValues.put(VIP_COLUMN_ID, NULL);
+       contentValues.put("logINID", GLOBALS.getInstance().getLoginID());
+        contentValues.put("SentinelID", CONSTANTS.getInstance().getExitID());
+        contentValues.put("userCode", GLOBALS.getInstance().getCashierID());
+        contentValues.put("userName", GLOBALS.getInstance().getCashierName());
+        contentValues.put("loginStamp", sdf.format(now));
+
+        long res = db.insert(XREAD_TABLE_NAME, null, contentValues);
+        if (res >= 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean createZRead () {
+        Date now = new Date();
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        final SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        //contentValues.put(VIP_COLUMN_ID, NULL);
+        contentValues.put("logINID", GLOBALS.getInstance().getLoginID());
+        contentValues.put("terminalnum", CONSTANTS.getInstance().getExitID());
+        contentValues.put("tellerCode", GLOBALS.getInstance().getCashierID());
+        contentValues.put("datetimeIn", sdf.format(now));
+
+        long res = db.insert(ZREAD_TABLE_NAME, null, contentValues);
+        if (res >= 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public void updateXRead (String key, String value) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(key, value);
+        db.update(XREAD_TABLE_NAME, contentValues, "logINID = ? ", new String[] { GLOBALS.getInstance().getLoginID() }  );
+
+    }
+
+    public int getImptCount(String fieldName) {
+        int data = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+        String SQL = "SELECT * FROM "+ XREAD_TABLE_NAME + " WHERE " + XREAD_COLUMN_LOGINID + " = '" + GLOBALS.getInstance().getLoginID() + "'";
+        Cursor res =  db.rawQuery( SQL, null );
+
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            data = res.getInt(res.getColumnIndex(fieldName));
+            res.moveToNext();
+        }
+        return data;
+    }
+
+    public void setImptCount(String fieldName, int Count) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Count++;
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(fieldName, Count);
+        db.update(XREAD_TABLE_NAME, contentValues, XREAD_COLUMN_LOGINID + " = ? ", new String[] { GLOBALS.getInstance().getLoginID() }  );
+
+    }
+
+    public double getImptAmount(String fieldName) {
+        double data = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor res =  db.rawQuery( "select " + fieldName + " from "+ XREAD_TABLE_NAME + " WHERE " + XREAD_COLUMN_LOGINID + " = '" + GLOBALS.getInstance().getLoginID() + "'", null );
+
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            data = res.getInt(res.getColumnIndex(fieldName));
+            res.moveToNext();
+        }
+        return data;
+    }
+
+    public void setImptAmount(String fieldName, double Amount) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(fieldName, Amount);
+        db.update(XREAD_TABLE_NAME, contentValues, XREAD_COLUMN_LOGINID + " = ? ", new String[] { GLOBALS.getInstance().getLoginID() }  );
+
+    }
+
 
     public boolean insertContact (String cardID, String parkerType, String plateNumber, String name, String cardNumber, String maxUse, String status, String ldc, String ldm) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -403,6 +545,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
+
     public boolean getMaster() {
         String data = "";
         SQLiteDatabase db = this.getReadableDatabase();
@@ -482,6 +625,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 return false;
             } else {
                 saveLogin(loginID,cashierID,cashierName,loginDate);
+                createXRead();
+                createZRead();
                 return true;
             }
         }
@@ -528,9 +673,17 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public void logout(String loginID) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        db.rawQuery( "DELETE from "+ GIN_TABLE_NAME, null );
+    public void logoutForced() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + GIN_TABLE_NAME);
+    }
+
+
+    public Integer logout (Integer id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(GIN_TABLE_NAME,
+                "id = ? ",
+                new String[] { Integer.toString(id) });
     }
 
     public void saveLogin(String loginID, String cashierid, String cashiername, String logindate) {

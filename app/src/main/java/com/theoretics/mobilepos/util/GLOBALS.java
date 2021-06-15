@@ -8,7 +8,9 @@ public class GLOBALS {
 
     private String loginID = ""; //Unique ID for saving
     private String entID = "";
-    private String location = "";
+    private String exitID = "";
+
+    private String cardNumber = "";
 
     private String cashierName = "";
     private String cashierID = "";
@@ -24,8 +26,17 @@ public class GLOBALS {
     private String duration = "";
 
     private int receiptNum = 0;
-    private int grandTotal = 0;
-    private int grossTotal = 0;
+    private double grandTotal = 0;
+    private double grossTotal = 0;
+    private double AmountDue = 0;
+    private double AmountGross = 0;
+    private double NetOfVAT = 0;
+    private double NetOfDiscount = 0;
+    private double discount = 0;
+    private double vat12 = 0;
+    private double vatsale = 0;
+    private double vatExemptedSales = 0;
+    private double vatAdjustment = 0;
 
     public GLOBALS(){}
 
@@ -66,6 +77,14 @@ public class GLOBALS {
     }
     public String getPlateNum() {
         return plateNum;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
     }
 
     public void setPlateNum(String plateNum) {
@@ -136,12 +155,12 @@ public class GLOBALS {
         this.entID = entID;
     }
 
-    public String getLocation() {
-        return location;
+    public String getExitID() {
+        return exitID;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setExitID(String exitID) {
+        this.exitID = exitID;
     }
 
     public int getReceiptNum() {
@@ -152,20 +171,92 @@ public class GLOBALS {
         this.receiptNum = receiptNum;
     }
 
-    public int getGrandTotal() {
+    public double getGrandTotal() {
         return grandTotal;
     }
 
-    public void setGrandTotal(int grandTotal) {
+    public void setGrandTotal(double grandTotal) {
         this.grandTotal = grandTotal;
     }
 
-    public int getGrossTotal() {
+    public double getGrossTotal() {
         return grossTotal;
     }
 
-    public void setGrossTotal(int grossTotal) {
+    public void setGrossTotal(double grossTotal) {
         this.grossTotal = grossTotal;
+    }
+
+    public double getAmountDue() {
+        return AmountDue;
+    }
+
+    public void setAmountDue(double amountDue) {
+        AmountDue = amountDue;
+    }
+
+    public double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(double discount) {
+        this.discount = discount;
+    }
+
+    public double getAmountGross() {
+        return AmountGross;
+    }
+
+    public void setAmountGross(double amountGross) {
+        AmountGross = amountGross;
+    }
+
+    public double getNetOfVAT() {
+        return NetOfVAT;
+    }
+
+    public void setNetOfVAT(double netOfVAT) {
+        NetOfVAT = netOfVAT;
+    }
+
+    public double getNetOfDiscount() {
+        return NetOfDiscount;
+    }
+
+    public void setNetOfDiscount(double netOfDiscount) {
+        NetOfDiscount = netOfDiscount;
+    }
+
+    public double getVat12() {
+        return vat12;
+    }
+
+    public void setVat12(double vat12) {
+        this.vat12 = vat12;
+    }
+
+    public double getVatsale() {
+        return vatsale;
+    }
+
+    public void setVatsale(double vatsale) {
+        this.vatsale = vatsale;
+    }
+
+    public double getVatExemptedSales() {
+        return vatExemptedSales;
+    }
+
+    public void setVatExemptedSales(double vatExemptedSales) {
+        this.vatExemptedSales = vatExemptedSales;
+    }
+
+    public double getVatAdjustment() {
+        return vatAdjustment;
+    }
+
+    public void setVatAdjustment(double vatAdjustment) {
+        this.vatAdjustment = vatAdjustment;
     }
 
     public String getReceiptCopyType() {

@@ -1,19 +1,18 @@
 package com.theoretics.mobilepos.bean;
 
-import com.theoretics.mobilepos.util.GLOBALS;
-
 public class RECEIPT {
 
     private static RECEIPT instance;
     private String receiptNum;
 
     private String entID = "";
-    private String location = "";
+    private String exitID = "";
 
     private String cashierName = "";
     private String cashierID = "";
     private String loginDate = "";
 
+    private String cardNumber = "";
     private String plateNum = "";
     private String pType = "";
     private String daysElapsed = "";
@@ -27,6 +26,8 @@ public class RECEIPT {
     private String discount = "";
 
     boolean isDiscounted = false;
+    private String tendered = "";
+    private String changeDue = "";
     private String AmountDue = "";
     private String AmountGross = "";
     private String NetOfVAT = "";
@@ -36,6 +37,12 @@ public class RECEIPT {
     private String vatExemptedSales = "";
     private String vatAdjustment = "";
 
+    private String SettlementRef = "";
+    private String SettlementName = "";
+    private String SettlementAddr = "";
+    private String SettlementTIN = "";
+    private String SettlementBusStyle = "";
+
     public RECEIPT(){}
 
     public static synchronized RECEIPT getInstance() {
@@ -43,6 +50,14 @@ public class RECEIPT {
             instance = new RECEIPT();
         }
         return instance;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
     }
 
     public String getReceiptNum() {
@@ -61,12 +76,12 @@ public class RECEIPT {
         this.entID = entID;
     }
 
-    public String getLocation() {
-        return location;
+    public String getExitID() {
+        return exitID;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setExitID(String exitID) {
+        this.exitID = exitID;
     }
 
     public String getCashierName() {
@@ -235,5 +250,61 @@ public class RECEIPT {
 
     public void setDiscounted(boolean discounted) {
         isDiscounted = discounted;
+    }
+
+    public String getTendered() {
+        return tendered;
+    }
+
+    public void setTendered(String tendered) {
+        this.tendered = tendered;
+    }
+
+    public String getChangeDue() {
+        return changeDue;
+    }
+
+    public void setChangeDue(String changeDue) {
+        this.changeDue = changeDue;
+    }
+
+    public String getSettlementRef() {
+        return SettlementRef;
+    }
+
+    public void setSettlementRef(String settlementRef) {
+        SettlementRef = settlementRef;
+    }
+
+    public String getSettlementName() {
+        return SettlementName;
+    }
+
+    public void setSettlementName(String settlementName) {
+        SettlementName = settlementName;
+    }
+
+    public String getSettlementAddr() {
+        return SettlementAddr;
+    }
+
+    public void setSettlementAddr(String settlementAddr) {
+        SettlementAddr = settlementAddr;
+    }
+
+    public String getSettlementTIN() {
+        return SettlementTIN;
+    }
+
+    public void setSettlementTIN(String settlementTIN) {
+        SettlementTIN = settlementTIN;
+    }
+
+    public String getSettlementBusStyle() {
+        return SettlementBusStyle;
+    }
+
+    public void setSettlementBusStyle(String settlementBusStyle) {
+        SettlementBusStyle = settlementBusStyle;
     }
 }

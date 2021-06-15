@@ -89,10 +89,13 @@ public class ComputeAPI {
             }
             vat12 = getVat(AmountDue);
             vatsale = getNonVat(AmountDue);
-
         }
 
         AmountGross = AmountDue;
+        GLOBALS.getInstance().setAmountGross(AmountGross);
+        GLOBALS.getInstance().setVat12(vat12);
+        GLOBALS.getInstance().setVatsale(vatsale);
+
         //--------- Senior / PWD / Discounted
         if (isDiscounted) {
             discount = getDiscount(AmountGross, discountPercentage);
@@ -104,8 +107,15 @@ public class ComputeAPI {
             vat12 = NetOfDiscount * 0.12;
             vatsale = 0;
             AmountDue = NetOfDiscount + (NetOfDiscount * .12f);
+            GLOBALS.getInstance().setDiscount(discount);
+            GLOBALS.getInstance().setVatAdjustment(vatAdjustment);
+            GLOBALS.getInstance().setNetOfVAT(NetOfVAT);
+            GLOBALS.getInstance().setNetOfDiscount(NetOfDiscount);
+            GLOBALS.getInstance().setVat12(vat12);
+            GLOBALS.getInstance().setVatsale(vatsale);
 
         }
+        GLOBALS.getInstance().setAmountDue(AmountDue);
 
         //-------------------------------------------
     }

@@ -2,7 +2,7 @@ package com.theoretics.mobilepos.util;
 
 public class CONSTANTS {
     private static CONSTANTS instance;
-    private String location = "AB01";
+    private String exitID = "AB01";
 
     private String REGTIN = "VAT REG TIN: 000-328-853-000";
     private String MIN = "MIN: 20022710505488671";
@@ -11,12 +11,12 @@ public class CONSTANTS {
 
     public CONSTANTS(){}
 
-    public String getLocation() {
-        return location;
+    public String getExitID() {
+        return exitID;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setExitID(String exitID) {
+        this.exitID = exitID;
     }
 
     public String getREGTIN() {

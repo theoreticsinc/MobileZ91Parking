@@ -55,6 +55,8 @@ public class ParkingExitActivity extends BaseActivity {
     private NfcAutoCheck nfcAutoCheck = null;
 
     private Button regularBtn = null;
+    private Button vipBtn = null;
+    private Button dialysisBtn = null;
     private Button pwdSeniorBtn = null;
 
     private TextView cardNum = null;
@@ -93,6 +95,7 @@ public class ParkingExitActivity extends BaseActivity {
 
         initView();
         dbh = new DBHelper(this);
+
         checkLog();
 
         if (Build.VERSION.SDK_INT >= 23) {
@@ -159,6 +162,8 @@ public class ParkingExitActivity extends BaseActivity {
 
     private void initView() {
         regularBtn = (Button) findViewById(R.id.regularBtn);
+        vipBtn = (Button) findViewById(R.id.vipBtn);
+        dialysisBtn = (Button) findViewById(R.id.dialysisBtn);
         regularBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -169,7 +174,7 @@ public class ParkingExitActivity extends BaseActivity {
                 intent.putExtra("inputPlate",inputPlate.getText().toString());
 
                 intent.putExtra("isDiscounted",false);
-                intent.putExtra("TRType","R");
+                intent.putExtra("TRType","RM");
                 intent.putExtra("daysElapsed", daysElapsed);
                 intent.putExtra("hrsRemaining", hrsRemaining);
                 intent.putExtra("minsRemaining", minsRemaining);
@@ -194,6 +199,18 @@ public class ParkingExitActivity extends BaseActivity {
                 intent.putExtra("minsRemaining", minsRemaining);
 
                 startActivity(intent);
+            }
+        });
+        vipBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                checkLog();
+            }
+        });
+        dialysisBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dbh.logoutForced();
             }
         });
 
