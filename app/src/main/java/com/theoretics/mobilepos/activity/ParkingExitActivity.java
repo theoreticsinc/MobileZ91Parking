@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.v4.app.ActivityCompat;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -134,6 +135,20 @@ public class ParkingExitActivity extends BaseActivity {
 
     }
 
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case 25:
+                Intent intent = new Intent(ParkingExitActivity.this, LogoutActivity.class);
+                intent.putExtra("cardNum",cardNum.getText());
+                startActivity(intent);
+                return true;
+            default:
+                System.out.println("ANGELO :" + keyCode);
+                return super.onKeyUp(keyCode, event);
+        }
+    }
+
     public String initiateFiles() {
         //file = context.getExternalFilesDir((String) null);
         internalfile = new File(internalPath);
@@ -204,13 +219,37 @@ public class ParkingExitActivity extends BaseActivity {
         vipBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkLog();
+                GLOBALS.getInstance().setPlateNum(inputPlate.getText().toString());
+                GLOBALS.getInstance().setReceiptCopyType("CUSTOMER COPY");
+                Intent intent = new Intent(ParkingExitActivity.this, ComputationActivity.class);
+                intent.putExtra("cardNum",cardNum.getText());
+                intent.putExtra("inputPlate",inputPlate.getText().toString());
+
+                intent.putExtra("isDiscounted",false);
+                intent.putExtra("TRType","V");
+                intent.putExtra("daysElapsed", daysElapsed);
+                intent.putExtra("hrsRemaining", hrsRemaining);
+                intent.putExtra("minsRemaining", minsRemaining);
+
+                startActivity(intent);
             }
         });
         dialysisBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dbh.logoutForced();
+                GLOBALS.getInstance().setPlateNum(inputPlate.getText().toString());
+                GLOBALS.getInstance().setReceiptCopyType("CUSTOMER COPY");
+                Intent intent = new Intent(ParkingExitActivity.this, ComputationActivity.class);
+                intent.putExtra("cardNum",cardNum.getText());
+                intent.putExtra("inputPlate",inputPlate.getText().toString());
+
+                intent.putExtra("isDiscounted",false);
+                intent.putExtra("TRType","DS");
+                intent.putExtra("daysElapsed", daysElapsed);
+                intent.putExtra("hrsRemaining", hrsRemaining);
+                intent.putExtra("minsRemaining", minsRemaining);
+
+                startActivity(intent);
             }
         });
 
@@ -233,6 +272,7 @@ public class ParkingExitActivity extends BaseActivity {
         if (dbh.getMaster() == false) {
             dbh.initiateMaster();
         }
+
         //durationElapsed.setText(GLOBALS.getInstance().getCashierID() + GLOBALS.getInstance().getCashierName()+GLOBALS.getInstance().getLoginID());
         //
         //durationElapsed.setText(rec.getExternalFilesDir(getApplicationContext()));
@@ -495,7 +535,7 @@ public class ParkingExitActivity extends BaseActivity {
                             }
                         });
                     } else {
-
+                        System.out.println("ANGELO : [NO DATA FOUND]");
                     }
                     System.out.println("ANGELO : [" + i + "]" + sb.toString());
                     //finally returning the read string

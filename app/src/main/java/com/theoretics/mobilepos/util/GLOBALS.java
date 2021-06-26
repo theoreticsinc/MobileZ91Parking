@@ -18,6 +18,7 @@ public class GLOBALS {
 
     private String plateNum = "";
     private String pType = "";
+    private String pTypeName = "";
     private String daysElapsed = "";
     private String hoursElapsed = "";
     private String minutesElapsed = "";
@@ -97,6 +98,14 @@ public class GLOBALS {
 
     public void setpType(String pType) {
         this.pType = pType;
+    }
+
+    public String getpTypeName() {
+        return pTypeName;
+    }
+
+    public void setpTypeName(String pTypeName) {
+        this.pTypeName = pTypeName;
     }
 
     public String getDatetimeIN() {

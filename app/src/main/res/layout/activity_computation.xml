@@ -42,11 +42,77 @@
             android:gravity="center_horizontal"
             android:orientation="horizontal">
 
+            <TextView
+                android:id="@+id/tenderThisMuch"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:text="Tendered:"
+                android:textColor="@color/a_normal"
+                android:textSize="24sp"
+                android:textStyle="normal|italic" />
+
+            <EditText
+                android:id="@+id/tenderInput"
+                android:layout_width="195dp"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textAllCaps="true"
+                android:textColor="@color/baseColor"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textview19"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:text="Change Due:"
+                android:textColor="@color/a_normal"
+                android:textSize="20sp"
+                android:textStyle="normal|italic" />
+
+            <TextView
+                android:id="@+id/change"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:textAlignment="viewStart"
+                android:textAllCaps="true"
+                android:textColor="@color/baseColor"
+                android:textSize="24sp"
+                android:textStyle="normal|italic" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical">
+
+
 
                 <TextView
                     android:id="@+id/textview13"
@@ -180,6 +246,7 @@
                     android:textSize="20sp"
                     android:textStyle="normal|italic" />
 
+
             </LinearLayout>
 
             <LinearLayout
@@ -187,6 +254,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical">
+
 
                 <TextView
                     android:id="@+id/cardTV"
@@ -316,6 +384,8 @@
                     android:textColor="@color/baseColor"
                     android:textSize="20sp"
                     android:textStyle="normal|italic" />
+
+
 
             </LinearLayout>
 

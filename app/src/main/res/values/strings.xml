@@ -526,5 +526,6 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="title_activity_parking_exit">Theoretics Mobile POS</string>
     <string name="title_activity_computation">ComputationActivity</string>
+    <string name="title_activity_logout">LogoutActivity</string>
 
 </resources>

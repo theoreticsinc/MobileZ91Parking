@@ -45,6 +45,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String XREAD_TABLE_NAME = "colltrain";
     public static final String ZREAD_TABLE_NAME = "zread";
     public static final String XREAD_COLUMN_LOGINID = "logINID";
+    public static final String ZREAD_COLUMN_LOGINID = "logINID";
 
 
     public static final String GIN_TABLE_NAME = "gin";
@@ -347,13 +348,17 @@ public class DBHelper extends SQLiteOpenHelper {
         return false;
     }
 
-    public boolean createZRead () {
+    public boolean createZRead (String beginOR, String beginTrans, String beginGross, String beginGrand) {
         Date now = new Date();
         String pattern = "yyyy-MM-dd HH:mm:ss";
         final SimpleDateFormat sdf = new SimpleDateFormat(pattern);
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         //contentValues.put(VIP_COLUMN_ID, NULL);
+        contentValues.put("beginOR", beginOR);
+        contentValues.put("beginTrans", beginTrans);
+        contentValues.put("oldGrossTotal", beginGross);
+        contentValues.put("oldGrand", beginGrand);
         contentValues.put("logINID", GLOBALS.getInstance().getLoginID());
         contentValues.put("terminalnum", CONSTANTS.getInstance().getExitID());
         contentValues.put("tellerCode", GLOBALS.getInstance().getCashierID());
@@ -375,10 +380,35 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+
+    public void updateZRead (String key, String value) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(key, value);
+        db.update(ZREAD_TABLE_NAME, contentValues, "logINID = ? ", new String[] { GLOBALS.getInstance().getLoginID() }  );
+
+    }
+
+    public String getOneZRead(String sql, String column) {
+        String data = "0";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( sql , null );
+        res.moveToFirst();
+        while(res.isAfterLast() == false){
+            data = res.getString(res.getColumnIndex(column));
+            res.moveToNext();
+        }
+        if (null == data) {
+            data = "0";
+        }
+        return data;
+    }
+
     public int getImptCount(String fieldName) {
         int data = 0;
         SQLiteDatabase db = this.getReadableDatabase();
-        String SQL = "SELECT * FROM "+ XREAD_TABLE_NAME + " WHERE " + XREAD_COLUMN_LOGINID + " = '" + GLOBALS.getInstance().getLoginID() + "'";
+        String SQL = "SELECT " + fieldName + " FROM "+ XREAD_TABLE_NAME + " WHERE " + XREAD_COLUMN_LOGINID + " = '" + GLOBALS.getInstance().getLoginID() + "'";
         Cursor res =  db.rawQuery( SQL, null );
 
         res.moveToFirst();
@@ -408,7 +438,7 @@ public class DBHelper extends SQLiteOpenHelper {
         res.moveToFirst();
 
         while(res.isAfterLast() == false){
-            data = res.getInt(res.getColumnIndex(fieldName));
+            data = res.getDouble(res.getColumnIndex(fieldName));
             res.moveToNext();
         }
         return data;
@@ -423,6 +453,38 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+    public double getImptGrand(String fieldName) {
+        double data = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor res =  db.rawQuery( "select " + fieldName + " from "+ MASTER_TABLE_NAME + " WHERE " + MASTER_COLUMN_ID + " = 1", null );
+
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            data = res.getInt(res.getColumnIndex(fieldName));
+            res.moveToNext();
+        }
+        return data;
+    }
+
+    public void setGrandTotal(double Amount) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MASTER_COLUMN_GRANDTOTAL, Amount);
+        db.update(MASTER_TABLE_NAME, contentValues, MASTER_COLUMN_ID + " = ? ", new String[] { Integer.toString(1) }  );
+
+    }
+
+    public void setGrossTotal(double Amount) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MASTER_COLUMN_GROSSTOTAL, Amount);
+        db.update(MASTER_TABLE_NAME, contentValues, MASTER_COLUMN_ID + " = ? ", new String[] { Integer.toString(1) }  );
+
+    }
 
     public boolean insertContact (String cardID, String parkerType, String plateNumber, String name, String cardNumber, String maxUse, String status, String ldc, String ldm) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -507,16 +569,29 @@ public class DBHelper extends SQLiteOpenHelper {
         GLOBALS.getInstance().setGrandTotal(0);
         GLOBALS.getInstance().setGrossTotal(0);
 
+        Date now = new Date();
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        final SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(MASTER_COLUMN_ID, 1);
         contentValues.put(MASTER_COLUMN_RECEIPTNOS, "1");
         contentValues.put(MASTER_COLUMN_GRANDTOTAL, "0");
         contentValues.put(MASTER_COLUMN_GROSSTOTAL, "0");
+        contentValues.put(MASTER_COLUMN_DATETIMERECORDED, sdf.format(now));
         db.insert(MASTER_TABLE_NAME, null, contentValues);
         return true;
     }
 
+    public boolean updateMaster(String column, String value) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(column, value);
+        db.insert(MASTER_TABLE_NAME, null, contentValues);
+        return true;
+    }
 
     public int getRNosData(String fieldName) {
         int data = 0;
@@ -626,12 +701,31 @@ public class DBHelper extends SQLiteOpenHelper {
             } else {
                 saveLogin(loginID,cashierID,cashierName,loginDate);
                 createXRead();
-                createZRead();
+                String beginOR = getOneTrans("SELECT receiptNos FROM master", "receiptNos");
+                String beginTrans = getOneTrans("SELECT MAX(id) AS beginTrans FROM exit_trans", "beginTrans");
+                String beginGross = getOneTrans("SELECT grossTotal FROM master", "grossTotal");
+                String beginGrand = getOneTrans("SELECT grandTotal FROM master", "grandTotal");
+                createZRead( CONSTANTS.getInstance().getExitID() + formatNos(beginOR), beginTrans, beginGross, beginGrand);
                 return true;
             }
         }
         return false;
 
+    }
+
+    public String getOneTrans(String sql, String column) {
+        String data = "0";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( sql , null );
+        res.moveToFirst();
+        while(res.isAfterLast() == false){
+            data = res.getString(res.getColumnIndex(column));
+            res.moveToNext();
+        }
+        if (null == data) {
+            data = "0";
+        }
+        return data;
     }
 
     public static String md5(final String s) {
@@ -676,14 +770,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public void logoutForced() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + GIN_TABLE_NAME);
-    }
-
-
-    public Integer logout (Integer id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        return db.delete(GIN_TABLE_NAME,
-                "id = ? ",
-                new String[] { Integer.toString(id) });
     }
 
     public void saveLogin(String loginID, String cashierid, String cashiername, String logindate) {
@@ -800,6 +886,17 @@ public class DBHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
         return array_list;
+    }
+
+    public String formatNos(String newReceipt) {
+        int stoploop = 12 - newReceipt.length();
+        int i = 0;
+        do {
+            newReceipt = "0" + newReceipt;
+            i++;
+        } while (i != stoploop);
+
+        return newReceipt;
     }
 
     public void fillPOSDB(SQLiteDatabase db) {

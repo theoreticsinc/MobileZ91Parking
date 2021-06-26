@@ -3,8 +3,12 @@ package com.theoretics.mobilepos.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.theoretics.mobilepos.R;
@@ -53,6 +57,9 @@ public class ComputationActivity extends BaseActivity {
     private TextView line4 = null;
     private TextView line5 = null;
 
+    private EditText tenderInput = null;
+    private TextView changeDueTV = null;
+
     private TextView amountDueTV = null;
     private Button confirmBtn = null;
 
@@ -96,14 +103,18 @@ public class ComputationActivity extends BaseActivity {
         line3 = (TextView) findViewById(R.id.line3);
         line4 = (TextView) findViewById(R.id.line4);
         line5 = (TextView) findViewById(R.id.line5);
-
+        tenderInput = (EditText) findViewById(R.id.tenderInput);
+        changeDueTV = findViewById(R.id.change);
         amountDueTV = (TextView) findViewById(R.id.amountDueTV);
-
         confirmBtn = findViewById(R.id.printBtn);
+
+        tenderInput.setFocusable(true);
+
 
         Intent myIntent = getIntent();
         isDiscounted = myIntent.getBooleanExtra("isDiscounted", false);
         TRType = myIntent.getStringExtra("TRType");
+        GLOBALS.getInstance().setpType(TRType);
         int daysElapsed = myIntent.getIntExtra("daysElapsed", 0);
         int hrsRemaining = myIntent.getIntExtra("hrsRemaining", 0);
         int minsRemaining = myIntent.getIntExtra("minsRemaining", 0);
@@ -122,12 +133,35 @@ public class ComputationActivity extends BaseActivity {
         } else {
             GLOBALS.getInstance().setDuration(GLOBALS.getInstance().getDaysElapsed() + "days " + GLOBALS.getInstance().getHoursElapsed() + "hours " + GLOBALS.getInstance().getMinutesElapsed() + "mins");
         }
+        GLOBALS.getInstance().setHoursElapsed(hrsRemaining + "");
+        GLOBALS.getInstance().setMinutesElapsed(minsRemaining + "");
+        RECEIPT.getInstance().setHoursElapsed(hrsRemaining + "");
+        RECEIPT.getInstance().setMinutesElapsed(minsRemaining + "");
+        GLOBALS.getInstance().setExitID(CONSTANTS.getInstance().getExitID());
+        RECEIPT.getInstance().setExitID(CONSTANTS.getInstance().getExitID());
+        RECEIPT.getInstance().setPlateNum(GLOBALS.getInstance().getPlateNum());
+        RECEIPT.getInstance().setCardNumber(GLOBALS.getInstance().getCardNumber());
+
         durationTV.setText(GLOBALS.getInstance().getDuration());
         //durationTV.setText(GLOBALS.getInstance().getDaysElapsed() + "days " + GLOBALS.getInstance().getHoursElapsed() + "hours " + GLOBALS.getInstance().getMinutesElapsed() + "mins");
         TimeINTV.setText(GLOBALS.getInstance().getDatetimeIN());
         TimeOUTTV.setText(GLOBALS.getInstance().getDatetimeOUT());
         if (TRType.compareToIgnoreCase("R") == 0) {
-            GLOBALS.getInstance().setpType("Regular");
+            GLOBALS.getInstance().setpTypeName("Regular");
+            isDiscounted = false;
+            line1.setText("VATable Sales    :");
+            line2.setText("VAT Amount(12%)  :");
+            line3.setText("VAT Exempt Sales :");
+            line4.setText("Zero-Rated Sales :");
+            line5.setText("");
+            grossSalesTV.setText(df2.format(ca.AmountGross) + "");
+            computation1.setText(df2.format(ca.vatsale) + "");
+            computation2.setText(df2.format(ca.vat12) + "");
+            computation3.setText("0.00");
+            computation4.setText("0.00");
+            computation5.setText("");
+        } else if (TRType.compareToIgnoreCase("RM") == 0) {
+            GLOBALS.getInstance().setpTypeName("MAB Regular");
             isDiscounted = false;
             line1.setText("VATable Sales    :");
             line2.setText("VAT Amount(12%)  :");
@@ -141,7 +175,7 @@ public class ComputationActivity extends BaseActivity {
             computation4.setText("0.00");
             computation5.setText("");
         } else if (TRType.compareToIgnoreCase("S") == 0) {
-            GLOBALS.getInstance().setpType("Senior");
+            GLOBALS.getInstance().setpTypeName("Senior");
             isDiscounted = true;
             line1.setText("LESS: VAT");
             line2.setText("NET OF VAT");
@@ -168,7 +202,36 @@ public class ComputationActivity extends BaseActivity {
 
             }
         });
+        tenderInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        tenderInput.addTextChangedListener(new TextWatcher() {
+            double tender;
+            double changeDue;
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                try {
+                    DecimalFormat df2 = new DecimalFormat("#0.00");
+                    tender = Double.valueOf(tenderInput.getText().toString());
+                    changeDue = tender - GLOBALS.getInstance().getAmountDue();
+                    changeDueTV.setText(df2.format(changeDue));
+                    changeDue = Double.parseDouble(df2.format(changeDue));
+
+                } catch (Exception ex) {
+
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                RECEIPT.getInstance().setTendered(tender + "");
+                RECEIPT.getInstance().setChangeDue(changeDue + "");
+            }
+        });
+        tenderInput.requestFocus();
         rec = new ReceiptUtils();
         rec.initiate(getApplicationContext());
         obj2Print = new ArrayList<PrintItemObj>();
@@ -286,7 +349,7 @@ public class ComputationActivity extends BaseActivity {
                 printOnly("Cashier Name : " + RECEIPT.getInstance().getCashierName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Location     : " + RECEIPT.getInstance().getExitID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Plate Number : " + RECEIPT.getInstance().getPlateNum(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
-                printOnly("Parker Type  : " + RECEIPT.getInstance().getpType(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+                printOnly("Parker Type  : " + RECEIPT.getInstance().getpTypeName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("TIME IN      : " + RECEIPT.getInstance().getDatetimeIN(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("TIME OUT     : " + RECEIPT.getInstance().getDatetimeOUT(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Duration     : " + RECEIPT.getInstance().getDuration(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
@@ -367,7 +430,7 @@ public class ComputationActivity extends BaseActivity {
             printNsave("Cashier Name : " + GLOBALS.getInstance().getCashierName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Location     : " + CONSTANTS.getInstance().getExitID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Plate Number : " + GLOBALS.getInstance().getPlateNum(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
-            printNsave("Parker Type  : " + GLOBALS.getInstance().getpType(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+            printNsave("Parker Type  : " + GLOBALS.getInstance().getpTypeName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("TIME IN      : " + GLOBALS.getInstance().getDatetimeIN(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("TIME OUT     : " + GLOBALS.getInstance().getDatetimeOUT(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Duration     : " + GLOBALS.getInstance().getDuration(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
@@ -446,6 +509,9 @@ public class ComputationActivity extends BaseActivity {
                             RECEIPT.getInstance().getSettlementBusStyle());
 
                     updateXRead();
+                    updateGrandTotal(GLOBALS.getInstance().getAmountDue());
+                    updateGrossTotal(GLOBALS.getInstance().getAmountGross());
+
                 }
 
                 @Override
@@ -481,6 +547,9 @@ public class ComputationActivity extends BaseActivity {
                             RECEIPT.getInstance().getSettlementBusStyle());
 
                     updateXRead();
+                    updateGrandTotal(GLOBALS.getInstance().getAmountDue());
+                    updateGrossTotal(GLOBALS.getInstance().getAmountGross());
+
                 }
             });
 
@@ -565,6 +634,8 @@ public class ComputationActivity extends BaseActivity {
 
         if (isDiscounted) {
             if (GLOBALS.getInstance().getpType().compareToIgnoreCase("S") == 0) {
+                int vatsaleAmount = dbh.getImptCount("vatsaleAmount");
+                dbh.setImptAmount("vatsaleAmount", vatsaleAmount + GLOBALS.getInstance().getNetOfDiscount());
                 double vatExemptedSalesAmount = dbh.getImptAmount("vatExemptedSalesAmount");
                 dbh.setImptAmount("vatExemptedSalesAmount", vatExemptedSalesAmount + GLOBALS.getInstance().getVatExemptedSales());
                 double seniorDiscountAmount = dbh.getImptAmount("seniorDiscountAmount");
@@ -576,6 +647,8 @@ public class ComputationActivity extends BaseActivity {
                 double seniorAmount = dbh.getImptAmount("seniorAmount");
                 dbh.setImptAmount("seniorAmount", seniorAmount + GLOBALS.getInstance().getAmountDue());
             } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("PW") == 0) {
+                int vatsaleAmount = dbh.getImptCount("vatsaleAmount");
+                dbh.setImptAmount("vatsaleAmount", vatsaleAmount + GLOBALS.getInstance().getNetOfDiscount());
                 double vatExemptedSalesAmount = dbh.getImptAmount("vatExemptedSalesAmount");
                 dbh.setImptAmount("vatExemptedSalesAmount", vatExemptedSalesAmount + GLOBALS.getInstance().getVatExemptedSales());
                 double pwdDiscountAmount = dbh.getImptAmount("pwdDiscountAmount");
@@ -588,15 +661,19 @@ public class ComputationActivity extends BaseActivity {
                 dbh.setImptAmount("pwdAmount", pwdAmount + GLOBALS.getInstance().getAmountDue());
             }
         } else {
+
+            int vatsaleAmount = dbh.getImptCount("vatsaleAmount");
+            dbh.setImptAmount("vatsaleAmount", vatsaleAmount + GLOBALS.getInstance().getVatsale());
+
             if (GLOBALS.getInstance().getpType().compareToIgnoreCase("V") == 0) {
                 double vipAmount = dbh.getImptAmount("vipAmount");
                 dbh.setImptAmount("vipAmount", vipAmount);
             } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("R") == 0) {
                 double regularAmount = dbh.getImptAmount("regularAmount");
-                dbh.setImptAmount("regularAmount", regularAmount);
+                dbh.setImptAmount("regularAmount", regularAmount + GLOBALS.getInstance().getAmountDue());
             } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("RM") == 0) {
                 double mabregularAmount = dbh.getImptAmount("mabregularAmount");
-                dbh.setImptAmount("mabregularAmount", mabregularAmount);
+                dbh.setImptAmount("mabregularAmount", mabregularAmount + GLOBALS.getInstance().getAmountDue());
             }
             else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("G") == 0) {
                 double graceperiodAmount = dbh.getImptAmount("graceperiodAmount");
@@ -604,14 +681,26 @@ public class ComputationActivity extends BaseActivity {
             }
             else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("L") == 0) {
                 double lostAmount = dbh.getImptAmount("lostAmount");
-                dbh.setImptAmount("lostAmount", lostAmount);
+                dbh.setImptAmount("lostAmount", lostAmount + GLOBALS.getInstance().getAmountDue());
             }
             else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("DS") == 0) {
                 double dialysisAmount = dbh.getImptAmount("dialysisAmount");
-                dbh.setImptAmount("dialysisAmount", dialysisAmount);
+                dbh.setImptAmount("dialysisAmount", dialysisAmount + GLOBALS.getInstance().getAmountDue());
             }
         }
 
+    }
+
+    private void updateGrandTotal (double amountDue) {
+        DBHelper dbh = new DBHelper(getApplicationContext());
+        double grandTotal = dbh.getImptGrand(DBHelper.MASTER_COLUMN_GRANDTOTAL);
+        dbh.setGrandTotal(amountDue + grandTotal);
+    }
+
+    private void updateGrossTotal (double amountDue) {
+        DBHelper dbh = new DBHelper(getApplicationContext());
+        double grossTotal = dbh.getImptGrand(DBHelper.MASTER_COLUMN_GROSSTOTAL);
+        dbh.setGrossTotal(amountDue + grossTotal);
     }
 
     private void saveTransaction(String ReceiptNumber,String CashierName, String EntranceID,
@@ -635,6 +724,7 @@ public class ComputationActivity extends BaseActivity {
         RECEIPT.getInstance().setExitID(GLOBALS.getInstance().getExitID());
         RECEIPT.getInstance().setPlateNum(GLOBALS.getInstance().getPlateNum());
         RECEIPT.getInstance().setpType(GLOBALS.getInstance().getpType());
+        RECEIPT.getInstance().setpTypeName(GLOBALS.getInstance().getpTypeName());
         RECEIPT.getInstance().setDatetimeIN(GLOBALS.getInstance().getDatetimeIN());
         RECEIPT.getInstance().setDatetimeOUT(GLOBALS.getInstance().getDatetimeOUT());
         RECEIPT.getInstance().setDuration(GLOBALS.getInstance().getDuration());
@@ -644,6 +734,7 @@ public class ComputationActivity extends BaseActivity {
 
         if (isDiscounted || TRType.compareToIgnoreCase("S") == 0) {
             RECEIPT.getInstance().setVat12(df2.format(ca.vat12));
+            RECEIPT.getInstance().setVatAdjustment(df2.format(ca.vatAdjustment));
             RECEIPT.getInstance().setNetOfVAT(df2.format(ca.NetOfVAT));
             RECEIPT.getInstance().setDiscount(df2.format(ca.discount));
             RECEIPT.getInstance().setNetOfDiscount(df2.format(ca.NetOfVAT - ca.discount));
@@ -669,6 +760,10 @@ public class ComputationActivity extends BaseActivity {
     private void updateReceiptNumber() {
         DBHelper dbh = new DBHelper(getApplicationContext());
         dbh.updateRNosData(DBHelper.MASTER_COLUMN_RECEIPTNOS, GLOBALS.getInstance().getReceiptNum() + 1);
+    }
+
+    public void Compute4Change() {
+
     }
 
     private String formatNos(String newReceipt) {

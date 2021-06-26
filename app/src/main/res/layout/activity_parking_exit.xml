@@ -8,230 +8,183 @@
     android:orientation="vertical"
     app:layout_anchorGravity="bottom">
 
-    <LinearLayout
+    <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="1093dp"
 
-        <Button
-            android:id="@+id/ttlConn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:layout_marginTop="10dip"
-            android:onClick="testButtons"
-            android:text="@string/conn_up"
-            android:visibility="gone" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/ver"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:layout_marginTop="10dip"
-            android:onClick="test"
-            android:text="@string/version"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/print"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:layout_marginTop="10dip"
-            android:onClick="test"
-            android:text="@string/printtest"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/led"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dip"
-            android:layout_marginTop="10dip"
-            android:onClick="test"
-            android:text="LED测试"
-            android:visibility="gone" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="bottom|center_horizontal|fill_vertical"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/cardTV"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
-            android:text="@string/lbl_card_number"
-            android:textColor="@color/a_normal"
-            android:textSize="18sp"
-            android:textStyle="normal|italic" />
-
-        <TextView
-            android:id="@+id/cardNum"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="0"
-            android:textColor="@color/baseColor"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textView6"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
-            android:text="@string/plate_number"
-            android:textColor="@color/a_normal"
-            android:textSize="18sp"
-            android:textStyle="normal|italic" />
-
-        <EditText
-            android:id="@+id/inputPlateNo"
-            android:layout_width="229dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:ems="10"
-            android:fontFamily="sans-serif-black"
-            android:gravity="center_horizontal|center_vertical"
-            android:inputType="textPersonName"
-            android:paddingLeft="10px"
-            android:paddingRight="10px"
-            android:textAlignment="center"
-            android:textAllCaps="true"
-            android:textColor="@color/baseColor"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textView9"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
-            android:text="Date / Time IN"
-            android:textColor="@color/a_normal"
-            android:textSize="18sp"
-            android:textStyle="normal|italic" />
-
-        <TextView
-            android:id="@+id/datetimeIN"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
-            android:textColor="@color/baseColor"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textView10"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
-            android:text="Date / Time OUT"
-            android:textColor="@color/a_normal"
-            android:textSize="18sp"
-            android:textStyle="normal|italic" />
-
-        <TextView
-            android:id="@+id/datetimeOUT"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
-            android:textColor="@color/baseColor"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/textView12"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
-            android:text="Duration"
-            android:textColor="@color/a_normal"
-            android:textSize="18sp"
-            android:textStyle="normal|italic" />
-
-        <TextView
-            android:id="@+id/durationElapsed"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="30dp"
-            android:layout_marginLeft="30dp"
-            android:layout_weight="1"
-            android:textColor="@color/baseColor"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/regularBtn"
-            android:layout_width="140dp"
-            android:layout_height="140dp"
-            android:layout_weight="1"
-            android:background="@drawable/retail_btn"
-            android:gravity="center_horizontal|center_vertical" />
-
+        >
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="150sp"
-            android:layout_gravity="bottom"
-            android:layout_weight="1"
-            android:gravity="bottom"
-            android:orientation="horizontal">
+            android:layout_width="450dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="bottom|center_horizontal|fill_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/cardTV"
+                android:layout_width="324dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:text="@string/lbl_card_number"
+                android:textColor="@color/a_normal"
+                android:textSize="18sp"
+                android:textStyle="normal|italic" />
+
+            <TextView
+                android:id="@+id/cardNum"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="0"
+                android:textColor="@color/baseColor"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:text="@string/plate_number"
+                android:textColor="@color/a_normal"
+                android:textSize="18sp"
+                android:textStyle="normal|italic" />
+
+            <EditText
+                android:id="@+id/inputPlateNo"
+                android:layout_width="229dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:ems="10"
+                android:fontFamily="sans-serif-black"
+                android:gravity="center_horizontal|center_vertical"
+                android:inputType="textPersonName"
+                android:paddingLeft="10px"
+                android:paddingRight="10px"
+                android:textAlignment="center"
+                android:textAllCaps="true"
+                android:textColor="@color/baseColor"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:text="Date / Time IN"
+                android:textColor="@color/a_normal"
+                android:textSize="18sp"
+                android:textStyle="normal|italic" />
+
+            <TextView
+                android:id="@+id/datetimeIN"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:textColor="@color/baseColor"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textView10"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:text="Date / Time OUT"
+                android:textColor="@color/a_normal"
+                android:textSize="18sp"
+                android:textStyle="normal|italic" />
+
+            <TextView
+                android:id="@+id/datetimeOUT"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:textColor="@color/baseColor"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textView12"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:text="Duration"
+                android:textColor="@color/a_normal"
+                android:textSize="18sp"
+                android:textStyle="normal|italic" />
+
+            <TextView
+                android:id="@+id/durationElapsed"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:textColor="@color/baseColor"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <Button
-                android:id="@+id/pwdSeniorBtn"
-                android:layout_width="115dp"
-                android:layout_height="142dp"
+                android:id="@+id/regularBtn"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
                 android:layout_weight="1"
-                android:background="@drawable/senior_btn"
+                android:background="@drawable/retail_btn"
                 android:gravity="center_horizontal|center_vertical" />
 
-            <Button
-                android:id="@+id/vipBtn"
-                android:layout_width="115dp"
-                android:layout_height="142dp"
-                android:layout_weight="1"
-                android:background="@drawable/vip_btn"
-                android:gravity="center_horizontal|center_vertical" />
 
-            <Button
-                android:id="@+id/dialysisBtn"
-                android:layout_width="115dp"
-                android:layout_height="142dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="150sp"
+                android:layout_gravity="bottom"
                 android:layout_weight="1"
-                android:background="@drawable/dialysis_btn"
-                android:gravity="center_horizontal|center_vertical" />
+                android:gravity="bottom"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/pwdSeniorBtn"
+                    android:layout_width="115dp"
+                    android:layout_height="142dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/senior_btn"
+                    android:gravity="center_horizontal|center_vertical" />
+
+                <Button
+                    android:id="@+id/vipBtn"
+                    android:layout_width="115dp"
+                    android:layout_height="142dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/vip_btn"
+                    android:gravity="center_horizontal|center_vertical" />
+
+                <Button
+                    android:id="@+id/dialysisBtn"
+                    android:layout_width="115dp"
+                    android:layout_height="142dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/dialysis_btn"
+                    android:gravity="center_horizontal|center_vertical" />
+            </LinearLayout>
+
         </LinearLayout>
-
-    </LinearLayout>
-
+    </HorizontalScrollView>
 </LinearLayout>
