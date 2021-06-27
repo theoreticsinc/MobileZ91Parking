@@ -1,4 +1,4 @@
-package com.theoretics.mobilepos.util;
+package com.theoretics.mobilepos.bean;
 
 public class GLOBALS {
     private static GLOBALS instance;

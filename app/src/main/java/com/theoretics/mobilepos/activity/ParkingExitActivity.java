@@ -1,7 +1,6 @@
 package com.theoretics.mobilepos.activity;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -17,10 +16,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.theoretics.mobilepos.MobileTheoreticsApplication;
 import com.theoretics.mobilepos.R;
 import com.theoretics.mobilepos.util.DBHelper;
-import com.theoretics.mobilepos.util.GLOBALS;
+import com.theoretics.mobilepos.bean.GLOBALS;
 import com.theoretics.mobilepos.util.HexUtil;
 import com.theoretics.mobilepos.util.NfcAutoCheck;
 import com.theoretics.mobilepos.util.ReceiptUtils;

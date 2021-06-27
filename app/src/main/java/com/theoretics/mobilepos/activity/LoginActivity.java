@@ -1,18 +1,13 @@
 package com.theoretics.mobilepos.activity;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
-import com.theoretics.mobilepos.MobileTheoreticsApplication;
 import com.theoretics.mobilepos.R;
 import com.theoretics.mobilepos.util.DBHelper;
-import com.theoretics.mobilepos.util.GLOBALS;
 
 import java.util.Date;
 
