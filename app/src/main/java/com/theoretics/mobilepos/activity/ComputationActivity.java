@@ -13,10 +13,10 @@ import android.widget.TextView;
 
 import com.theoretics.mobilepos.R;
 import com.theoretics.mobilepos.bean.RECEIPT;
-import com.theoretics.mobilepos.util.CONSTANTS;
+import com.theoretics.mobilepos.bean.CONSTANTS;
 import com.theoretics.mobilepos.util.ComputeAPI;
 import com.theoretics.mobilepos.util.DBHelper;
-import com.theoretics.mobilepos.util.GLOBALS;
+import com.theoretics.mobilepos.bean.GLOBALS;
 import com.theoretics.mobilepos.util.ReceiptUtils;
 import com.topwise.cloudpos.aidl.AidlDeviceService;
 import com.topwise.cloudpos.aidl.buzzer.AidlBuzzer;
@@ -162,6 +162,34 @@ public class ComputationActivity extends BaseActivity {
             computation5.setText("");
         } else if (TRType.compareToIgnoreCase("RM") == 0) {
             GLOBALS.getInstance().setpTypeName("MAB Regular");
+            isDiscounted = false;
+            line1.setText("VATable Sales    :");
+            line2.setText("VAT Amount(12%)  :");
+            line3.setText("VAT Exempt Sales :");
+            line4.setText("Zero-Rated Sales :");
+            line5.setText("");
+            grossSalesTV.setText(df2.format(ca.AmountGross) + "");
+            computation1.setText(df2.format(ca.vatsale) + "");
+            computation2.setText(df2.format(ca.vat12) + "");
+            computation3.setText("0.00");
+            computation4.setText("0.00");
+            computation5.setText("");
+        } else if (TRType.compareToIgnoreCase("V") == 0) {
+            GLOBALS.getInstance().setpTypeName("VIP");
+            isDiscounted = false;
+            line1.setText("VATable Sales    :");
+            line2.setText("VAT Amount(12%)  :");
+            line3.setText("VAT Exempt Sales :");
+            line4.setText("Zero-Rated Sales :");
+            line5.setText("");
+            grossSalesTV.setText(df2.format(0) + "");
+            computation1.setText(df2.format(0) + "");
+            computation2.setText(df2.format(0) + "");
+            computation3.setText("0.00");
+            computation4.setText("0.00");
+            computation5.setText("");
+        } else if (TRType.compareToIgnoreCase("DS") == 0) {
+            GLOBALS.getInstance().setpTypeName("Dialysis");
             isDiscounted = false;
             line1.setText("VATable Sales    :");
             line2.setText("VAT Amount(12%)  :");
@@ -343,15 +371,17 @@ public class ComputationActivity extends BaseActivity {
             printOnly(CONSTANTS.getInstance().getPTU(),PrinterConstant.FontSize.SMALL,false, PrintItemObj.ALIGN.CENTER);
             printOnly("OFFICIAL RECEIPT",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.CENTER);
             printOnly("ACCOUNTING COPY",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.CENTER);
-            printOnly("RECEIPT NUM.  : " + RECEIPT.getInstance().getReceiptNum(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+            printOnly("RECEIPT NUM. : " + RECEIPT.getInstance().getReceiptNum(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printOnly("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Ent ID.      : " + RECEIPT.getInstance().getEntID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Cashier Name : " + RECEIPT.getInstance().getCashierName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Location     : " + RECEIPT.getInstance().getExitID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Plate Number : " + RECEIPT.getInstance().getPlateNum(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Parker Type  : " + RECEIPT.getInstance().getpTypeName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
-                printOnly("TIME IN      : " + RECEIPT.getInstance().getDatetimeIN(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
-                printOnly("TIME OUT     : " + RECEIPT.getInstance().getDatetimeOUT(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+                String dtIN = RECEIPT.getInstance().getDatetimeIN().substring(0,RECEIPT.getInstance().getDatetimeIN().length() - 3);
+                String dtOUT = RECEIPT.getInstance().getDatetimeOUT().substring(0,RECEIPT.getInstance().getDatetimeOUT().length() - 3);
+                printOnly("TIME IN      : " + dtIN,PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+                printOnly("TIME OUT     : " + dtOUT,PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("Duration     : " + RECEIPT.getInstance().getDuration(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
                 printOnly("GROSS AMOUNT      " + RECEIPT.getInstance().getAmountGross(),PrinterConstant.FontSize.LARGE,false, PrintItemObj.ALIGN.LEFT);
@@ -398,11 +428,27 @@ public class ComputationActivity extends BaseActivity {
                 public void onPrintFinish() throws RemoteException {
                     //String endTime = getCurTime();
                     //sendmessage(getStringByid(R.string.print_end) + endTime);
+                    try {
+                        if (isLedOn) {
+                            iLed.setLed(false);
+                            isLedOn = false;
+                        }
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
                 public void onError(int arg0) throws RemoteException {
                     //sendmessage(getStringByid(R.string.print_faile_errcode) + arg0);
+                    try {
+                        if (isLedOn) {
+                            iLed.setLed(false);
+                            isLedOn = false;
+                        }
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
 
@@ -424,15 +470,17 @@ public class ComputationActivity extends BaseActivity {
             printNsave(CONSTANTS.getInstance().getPTU(),PrinterConstant.FontSize.SMALL,false, PrintItemObj.ALIGN.CENTER);
             printNsave("OFFICIAL RECEIPT",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.CENTER);
             printNsave("CUSTOMER COPY",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.CENTER);
-            printNsave("RECEIPT NUM.  : " + recNum,PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+            printNsave("RECEIPT NUM. : " + recNum,PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Ent ID.      : " + GLOBALS.getInstance().getEntID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Cashier Name : " + GLOBALS.getInstance().getCashierName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Location     : " + CONSTANTS.getInstance().getExitID(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Plate Number : " + GLOBALS.getInstance().getPlateNum(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Parker Type  : " + GLOBALS.getInstance().getpTypeName(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
-            printNsave("TIME IN      : " + GLOBALS.getInstance().getDatetimeIN(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
-            printNsave("TIME OUT     : " + GLOBALS.getInstance().getDatetimeOUT(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+            String dtIN = RECEIPT.getInstance().getDatetimeIN().substring(0,RECEIPT.getInstance().getDatetimeIN().length() - 3);
+            String dtOUT = RECEIPT.getInstance().getDatetimeOUT().substring(0,RECEIPT.getInstance().getDatetimeOUT().length() - 3);
+            printNsave("TIME IN      : " + dtIN,PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
+            printNsave("TIME OUT     : " + dtOUT,PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("Duration     : " + GLOBALS.getInstance().getDuration(),PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT);
             printNsave("GROSS AMOUNT      " + df2.format(ca.AmountGross),PrinterConstant.FontSize.LARGE,false, PrintItemObj.ALIGN.LEFT);
@@ -600,8 +648,8 @@ public class ComputationActivity extends BaseActivity {
             }
         } else {
             if (GLOBALS.getInstance().getpType().compareToIgnoreCase("V") == 0) {
-                int regularCount = dbh.getImptCount("regularCount");
-                dbh.setImptCount("regularCount", regularCount);
+                int vipCount = dbh.getImptCount("vipCount");
+                dbh.setImptCount("vipCount", vipCount);
             } else if (GLOBALS.getInstance().getpType().compareToIgnoreCase("R") == 0) {
                 int regularCount = dbh.getImptCount("regularCount");
                 dbh.setImptCount("regularCount", regularCount);

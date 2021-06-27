@@ -7,6 +7,9 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.theoretics.mobilepos.bean.CONSTANTS;
+import com.theoretics.mobilepos.bean.GLOBALS;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -201,6 +204,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 "tricycleAmount real," +
                 "deliveryCount integer," +
                 "deliveryAmount real," +
+                "ambulanceCount integer," +
+                "ambulanceAmount real," +
+                "ambulatoryCount integer," +
+                "ambulatoryAmount real," +
                 "bpoemployeeCount integer," +
                 "bpoemployeeAmount real," +
                 "employeesCount integer," +
@@ -211,6 +218,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 "mabregularAmount real," +
                 "seniormotorCount integer," +
                 "seniormotorAmount real," +
+                "inpatientCount integer," +
+                "inpatientAmount real," +
+                "ambulatoryCount integer," +
+                "ambulatoryAmount real," +
                 "dialysisCount integer," +
                 "dialysisAmount real)");
 
@@ -401,6 +412,21 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         if (null == data) {
             data = "0";
+        }
+        return data;
+    }
+
+    public String getImptString(String fieldName) {
+        String data = "";
+        SQLiteDatabase db = this.getReadableDatabase();
+        String SQL = "SELECT " + fieldName + " FROM "+ XREAD_TABLE_NAME + " WHERE " + XREAD_COLUMN_LOGINID + " = '" + GLOBALS.getInstance().getLoginID() + "'";
+        Cursor res =  db.rawQuery( SQL, null );
+
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            data = res.getString(res.getColumnIndex(fieldName));
+            res.moveToNext();
         }
         return data;
     }

@@ -3,8 +3,6 @@ package com.theoretics.mobilepos;
 import android.app.Application;
 import android.content.Context;
 
-import com.theoretics.mobilepos.util.GLOBALS;
-
 /**
  * Created by Administrator on 2018/2/1.
  */

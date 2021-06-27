@@ -1,4 +1,4 @@
-package com.theoretics.mobilepos.util;
+package com.theoretics.mobilepos.bean;
 
 public class CONSTANTS {
     private static CONSTANTS instance;

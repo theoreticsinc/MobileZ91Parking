@@ -1,5 +1,8 @@
 package com.theoretics.mobilepos.util;
 
+
+import com.theoretics.mobilepos.bean.GLOBALS;
+
 import java.text.DecimalFormat;
 
 public class ComputeAPI {
@@ -115,6 +118,40 @@ public class ComputeAPI {
                 }
                 else {
                     AmountDue = flatRate + ((hoursElapsed - firstHourCharge + 1) * succeedingRate);
+                }
+            }
+            vat12 = getVat(AmountDue);
+            vatsale = getNonVat(AmountDue);
+        } else if (TRType.compareToIgnoreCase("V") == 0) {
+            AmountDue = 0;
+            vat12 = 0;
+            vatsale = 0;
+        }
+        else if (TRType.compareToIgnoreCase("DS") == 0) {
+
+            if (hoursElapsed <= firstHourCharge) {
+                AmountDue = 0;
+                if (hoursElapsed == 0 && minutesElapsed <= 15) {
+                    //  Grace Period
+                    AmountDue = 0;
+                }
+                else {
+                    AmountDue = flatRate;
+                }
+            } else if (hoursElapsed == firstHourCharge) {
+                if (minutesElapsed == 0) {
+                    AmountDue = flatRate;
+                }
+                else {
+                    //  Succeeding Rates a Fraction Thereof
+                    AmountDue = flatRate;// + ((hoursElapsed - firstHourCharge) * succeedingRate);
+                }
+            } else if (hoursElapsed >= firstHourCharge + 1) {
+                if (minutesElapsed == 0) {
+                    AmountDue = flatRate;// + ((hoursElapsed - firstHourCharge) * succeedingRate);
+                }
+                else {
+                    AmountDue = flatRate;// + ((hoursElapsed - firstHourCharge + 1) * succeedingRate);
                 }
             }
             vat12 = getVat(AmountDue);
