@@ -5,8 +5,10 @@ public class CONSTANTS {
     private String exitID = "AB01";
 
     private String REGTIN = "VAT REG TIN: 000-328-853-000";
-    private String MIN = "MIN: 20022710505488671";
-    private String PTU = "PTU NO: FP022020-031-0252249-00000";
+    private String MIN = "MIN: 21060915095156961";//WT
+    //private String MIN = "MIN: 21060915095156962";//FC
+    private String PTU = "PTU NO: FP062021-031-0292659-00000";//HZ511SACOL350WT
+    //private String PTU = "PTU NO: FP062021-031-0292660-00000";//HZ511SACOL350FC
 
 
     public CONSTANTS(){}

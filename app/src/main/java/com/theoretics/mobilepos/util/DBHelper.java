@@ -25,6 +25,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String NET_MANAGER_TABLE_NAME = "netmanager";
     public static final String NET_MANAGER_COLUMN_ID = "id";
+    public static final String NET_MANAGER_COL_TABLETYPE = "tableName";
     public static final String NET_MANAGER_COLUMN_LDC = "LastDateCreated";
     public static final String NET_MANAGER_COLUMN_LDM = "LastDateModified";
 
@@ -220,8 +221,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 "seniormotorAmount real," +
                 "inpatientCount integer," +
                 "inpatientAmount real," +
-                "ambulatoryCount integer," +
-                "ambulatoryAmount real," +
                 "dialysisCount integer," +
                 "dialysisAmount real)");
 
@@ -260,6 +259,7 @@ public class DBHelper extends SQLiteOpenHelper {
         
         db.execSQL("create table " + NET_MANAGER_TABLE_NAME +
                 " (id integer primary key, " +
+                NET_MANAGER_COL_TABLETYPE + " text, " +
                 NET_MANAGER_COLUMN_LDC + " DATETIME, " +
                 NET_MANAGER_COLUMN_LDM + " DATETIME)");
 
@@ -698,6 +698,33 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+
+    public boolean validateLogout(String username, String password) {
+        Date now = new Date();
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        final SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+
+        String data = "";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from "+ POS_TABLE_NAME +" where "+ POS_COLUMN_PASSWORD +"='"+ md5(password) +"' AND "
+                + POS_COLUMN_USERNAME + "='"+username+"'", null );
+
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            data = res.getString(res.getColumnIndex(POS_COLUMN_USERNAME));
+
+            if(data.compareTo("") == 0) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+
     public boolean validateLogin(String username, String password) {
         Date now = new Date();
         String pattern = "yyyy-MM-dd HH:mm:ss";
@@ -820,18 +847,34 @@ public class DBHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public Cursor getLastDateData(String tableType) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from "+ NET_MANAGER_TABLE_NAME + " WHERE " + NET_MANAGER_COL_TABLETYPE + " = '" + tableType + "'", null );
+        return res;
+    }
+
     public Cursor updateLastDateData() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+ NET_MANAGER_TABLE_NAME, null );
         return res;
     }
 
+    public Cursor getExitDataForServer(String ldm) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from "+ EXIT_TABLE_NAME + " WHERE DateTimeOUT > '" + ldm + "'", null );
+        return res;
+    }
 
+    public Cursor getXReadDataForServer(String ldm) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from "+ XREAD_TABLE_NAME + " WHERE logoutStamp > '" + ldm + "'", null );
+        return res;
+    }
 
-    public boolean insertLDCandLDM (String LDC, String LDM) {
+    public boolean insertLDCandLDM (String tableType, String LDC, String LDM) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(NET_MANAGER_COLUMN_ID, 1);
+        contentValues.put(NET_MANAGER_COL_TABLETYPE, tableType);
         contentValues.put(NET_MANAGER_COLUMN_LDC, LDC);
         contentValues.put(NET_MANAGER_COLUMN_LDM, LDM);
         db.insert(NET_MANAGER_TABLE_NAME, null, contentValues);
@@ -847,27 +890,28 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateLDC (String LDC) {
+    public boolean updateLDC (String tableType, String LDC) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(NET_MANAGER_COLUMN_LDC, LDC);
-        db.update(NET_MANAGER_TABLE_NAME, contentValues, "id = ? ", new String[] { Integer.toString(1) }  );
+        db.update(NET_MANAGER_TABLE_NAME, contentValues, NET_MANAGER_COL_TABLETYPE + " = ? ", new String[] { tableType }  );
         return true;
     }
 
-    public boolean insertLDM (String LDM) {
+    public boolean insertLDM (String tableType, String LDM) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        contentValues.put(NET_MANAGER_COL_TABLETYPE, tableType);
         contentValues.put(NET_MANAGER_COLUMN_LDM, LDM);
         db.insert(NET_MANAGER_TABLE_NAME, null, contentValues);
         return true;
     }
 
-    public boolean updateLDM (String LDM) {
+    public boolean updateLDM (String tableType, String LDM) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(NET_MANAGER_COLUMN_LDM, LDM);
-        db.update(NET_MANAGER_TABLE_NAME, contentValues, "id = ? ", new String[] { Integer.toString(1) }  );
+        db.update(NET_MANAGER_TABLE_NAME, contentValues, NET_MANAGER_COL_TABLETYPE + " = ? ", new String[] { tableType }  );
         return true;
     }
 

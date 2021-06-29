@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.theoretics.mobilepos.R;
 import com.theoretics.mobilepos.util.DBHelper;
@@ -52,7 +53,7 @@ public class LoginActivity extends AppCompatActivity{
                 } else {
                     loginUsername.setText("");
                     loginPassword.setText("");
-
+                    Toast.makeText(getApplicationContext(), "Wrong Username/Password. Please Try again.", Toast.LENGTH_SHORT).show();
                 }
             }
         });

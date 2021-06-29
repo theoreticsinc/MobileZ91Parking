@@ -33,9 +33,9 @@ public class ComputeAPI {
         hoursElapsed = hoursElapsed + convHours;
 
         //-----------RETAIL-----------------------
-        if (TRType.compareToIgnoreCase("R") == 0) {
+        if (TRType.compareToIgnoreCase("R") == 0 || TRType.compareToIgnoreCase("RM") == 0) {
 
-            if (hoursElapsed <= firstHourCharge) {
+            if (hoursElapsed < firstHourCharge) {
                 AmountDue = 0;
                 if (hoursElapsed == 0 && minutesElapsed <= 15) {
                     //  Grace Period
@@ -50,22 +50,22 @@ public class ComputeAPI {
                 }
                 else {
                     //  Succeeding Rates a Fraction Thereof
-                    AmountDue = flatRate + ((hoursElapsed - firstHourCharge) * succeedingRate);
+                    AmountDue = flatRate + succeedingRate + ((hoursElapsed - firstHourCharge) * succeedingRate);
                 }
             } else if (hoursElapsed >= firstHourCharge + 1) {
                 if (minutesElapsed == 0) {
                     AmountDue = flatRate + ((hoursElapsed - firstHourCharge) * succeedingRate);
                 }
                 else {
-                    AmountDue = flatRate + ((hoursElapsed - firstHourCharge + 1) * succeedingRate);
+                    AmountDue = flatRate + succeedingRate + ((hoursElapsed - firstHourCharge + 1) * succeedingRate);
                 }
             }
             vat12 = getVat(AmountDue);
             vatsale = getNonVat(AmountDue);
 
-        } else if (TRType.compareToIgnoreCase("RM") == 0) {
+        }  else if (TRType.compareToIgnoreCase("S") == 0) {
 
-            if (hoursElapsed <= firstHourCharge) {
+            if (hoursElapsed < firstHourCharge) {
                 AmountDue = 0;
                 if (hoursElapsed == 0 && minutesElapsed <= 15) {
                     //  Grace Period
@@ -80,44 +80,14 @@ public class ComputeAPI {
                 }
                 else {
                     //  Succeeding Rates a Fraction Thereof
-                    AmountDue = flatRate + ((hoursElapsed - firstHourCharge) * succeedingRate);
+                    AmountDue = flatRate + succeedingRate + ((hoursElapsed - firstHourCharge) * succeedingRate);
                 }
             } else if (hoursElapsed >= firstHourCharge + 1) {
                 if (minutesElapsed == 0) {
                     AmountDue = flatRate + ((hoursElapsed - firstHourCharge) * succeedingRate);
                 }
                 else {
-                    AmountDue = flatRate + ((hoursElapsed - firstHourCharge + 1) * succeedingRate);
-                }
-            }
-            vat12 = getVat(AmountDue);
-            vatsale = getNonVat(AmountDue);
-
-        } else if (TRType.compareToIgnoreCase("S") == 0) {
-
-            if (hoursElapsed <= firstHourCharge) {
-                AmountDue = 0;
-                if (hoursElapsed == 0 && minutesElapsed <= 15) {
-                    //  Grace Period
-                    AmountDue = 0;
-                }
-                else {
-                    AmountDue = flatRate;
-                }
-            } else if (hoursElapsed == firstHourCharge) {
-                if (minutesElapsed == 0) {
-                    AmountDue = flatRate;
-                }
-                else {
-                    //  Succeeding Rates a Fraction Thereof
-                    AmountDue = flatRate + ((hoursElapsed - firstHourCharge) * succeedingRate);
-                }
-            } else if (hoursElapsed >= firstHourCharge + 1) {
-                if (minutesElapsed == 0) {
-                    AmountDue = flatRate + ((hoursElapsed - firstHourCharge) * succeedingRate);
-                }
-                else {
-                    AmountDue = flatRate + ((hoursElapsed - firstHourCharge + 1) * succeedingRate);
+                    AmountDue = flatRate + succeedingRate + ((hoursElapsed - firstHourCharge + 1) * succeedingRate);
                 }
             }
             vat12 = getVat(AmountDue);
@@ -129,7 +99,7 @@ public class ComputeAPI {
         }
         else if (TRType.compareToIgnoreCase("DS") == 0) {
 
-            if (hoursElapsed <= firstHourCharge) {
+            if (hoursElapsed < firstHourCharge) {
                 AmountDue = 0;
                 if (hoursElapsed == 0 && minutesElapsed <= 15) {
                     //  Grace Period

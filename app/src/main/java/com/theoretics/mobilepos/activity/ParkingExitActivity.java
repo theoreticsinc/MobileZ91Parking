@@ -20,6 +20,7 @@ import com.theoretics.mobilepos.R;
 import com.theoretics.mobilepos.util.DBHelper;
 import com.theoretics.mobilepos.bean.GLOBALS;
 import com.theoretics.mobilepos.util.HexUtil;
+import com.theoretics.mobilepos.util.HttpHandler;
 import com.theoretics.mobilepos.util.NfcAutoCheck;
 import com.theoretics.mobilepos.util.ReceiptUtils;
 import com.topwise.cloudpos.aidl.AidlDeviceService;
@@ -36,9 +37,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_CARDCODE;
 import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_LANE;
@@ -46,7 +50,13 @@ import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_PC;
 import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_PLATE;
 import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_TIMEIN;
 import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_VEHICLE;
+import static com.theoretics.mobilepos.util.DBHelper.EXIT_TABLE_NAME;
+import static com.theoretics.mobilepos.util.DBHelper.NET_MANAGER_COLUMN_LDC;
+import static com.theoretics.mobilepos.util.DBHelper.NET_MANAGER_COLUMN_LDM;
 import static com.theoretics.mobilepos.util.DBHelper.SERVER_NAME;
+import static com.theoretics.mobilepos.util.DBHelper.VIP_TABLE_NAME;
+import static com.theoretics.mobilepos.util.DBHelper.XREAD_TABLE_NAME;
+import static com.theoretics.mobilepos.util.DBHelper.ZREAD_TABLE_NAME;
 
 public class ParkingExitActivity extends BaseActivity {
 
@@ -131,6 +141,11 @@ public class ParkingExitActivity extends BaseActivity {
             }
         });*/
 
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
     }
 
     @Override
@@ -257,6 +272,243 @@ public class ParkingExitActivity extends BaseActivity {
         inputPlate = (EditText) findViewById(R.id.inputPlateNo);
         durationElapsed = (TextView) findViewById(R.id.durationElapsed);
         rec = new ReceiptUtils();
+
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                runNetManager();
+                System.out.println("ANGELO : [" + new Date().toString() + "]" );
+            }
+        },25000,60000 * 5);
+
+    }
+
+    public void runNetManager()
+    {
+        Cursor res = null;
+        HttpHandler sh = new HttpHandler(dbh);
+        String pattern = "yyyy-MM-dd hh:mm:ss";
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+
+        //vipDATA[0] = cardID;
+        res = dbh.getLastDateData();
+        if (res == null) {
+            return;
+        }
+        else if (res.getCount() == 0) {
+            Date now = new Date();
+            String n = sdf.format(now);
+            System.out.println(n);
+            n = "2021-01-01 00:00:00";
+            dbh.insertLDCandLDM(VIP_TABLE_NAME, n, n);
+            dbh.insertLDCandLDM(XREAD_TABLE_NAME, n, n);
+            dbh.insertLDCandLDM(EXIT_TABLE_NAME, n, n);
+            //sh.getNewVIPFromServer(SERVER_NAME + "/vipchecknew.php?from=", n);
+        }
+        else {
+
+
+            //-----------------Exit Transactions Upload 2 Server
+
+            res = dbh.getLastDateData(EXIT_TABLE_NAME);
+            res.moveToFirst();
+
+            while (res.isAfterLast() == false) {
+
+                String ldm = res.getString(res.getColumnIndex(NET_MANAGER_COLUMN_LDM));
+
+                System.out.println("ANGELO : Last Date Modified: " + ldm);
+
+                try {
+                    Date ldm_date = sdf.parse(ldm);
+
+                    System.out.println("ANGELO : DATE Last Date Modified: " + ldm_date);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                Cursor data4uploading = dbh.getExitDataForServer(ldm);
+                data4uploading.moveToFirst();
+                while (data4uploading.isAfterLast() == false) {
+                    String a = data4uploading.getString(data4uploading.getColumnIndex("ReceiptNumber"));
+                    String b = data4uploading.getString(data4uploading.getColumnIndex("CashierName"));
+                    String c = data4uploading.getString(data4uploading.getColumnIndex("EntranceID"));
+                    String d = data4uploading.getString(data4uploading.getColumnIndex("ExitID"));
+                    String e = data4uploading.getString(data4uploading.getColumnIndex("CardNumber"));
+                    String f = data4uploading.getString(data4uploading.getColumnIndex("PlateNumber"));
+                    String g = data4uploading.getString(data4uploading.getColumnIndex("ParkerType"));
+                    String h = data4uploading.getDouble(data4uploading.getColumnIndex("NetOfDiscount")) + "";
+                    String i = data4uploading.getDouble(data4uploading.getColumnIndex("Amount")) + "";
+                    String j = data4uploading.getDouble(data4uploading.getColumnIndex("GrossAmount")) + "";
+                    String k = data4uploading.getDouble(data4uploading.getColumnIndex("discount")) + "";
+                    String l = data4uploading.getDouble(data4uploading.getColumnIndex("vatAdjustment")) + "";
+                    String m = data4uploading.getDouble(data4uploading.getColumnIndex("vat12")) + "";
+                    String n = data4uploading.getDouble(data4uploading.getColumnIndex("vatsale")) + "";
+                    String o = data4uploading.getDouble(data4uploading.getColumnIndex("vatExemptedSales")) + "";
+                    String p = data4uploading.getString(data4uploading.getColumnIndex("tendered"));
+                    String q = data4uploading.getString(data4uploading.getColumnIndex("changeDue"));
+                    String r = data4uploading.getString(data4uploading.getColumnIndex("DateTimeIN"));
+                    String s = data4uploading.getString(data4uploading.getColumnIndex("DateTimeOUT"));
+                    String t = data4uploading.getString(data4uploading.getColumnIndex("HoursParked"));
+                    String u = data4uploading.getString(data4uploading.getColumnIndex("MinutesParked"));
+                    String v = data4uploading.getString(data4uploading.getColumnIndex("SettlementRef"));
+                    String w = data4uploading.getString(data4uploading.getColumnIndex("SettlementName"));
+                    String x = data4uploading.getString(data4uploading.getColumnIndex("SettlementAddr"));
+                    String y = data4uploading.getString(data4uploading.getColumnIndex("SettlementTIN"));
+                    String z = data4uploading.getString(data4uploading.getColumnIndex("SettlementBusStyle"));
+String sql = "INSERT INTO `carpark`.`exit_trans` (`pkid`, `void`, `voidRefID`, `ReceiptNumber`, `CashierName`, `EntranceID`, `ExitID`, `CardNumber`, `PlateNumber`, `ParkerType`, `NetOfDiscount`, `Amount`, `GrossAmount`, `discount`, `vatAdjustment`, `vat12`, `vatsale`, `vatExemptedSales`, `tendered`, `changeDue`, `DateTimeIN`, `DateTimeOUT`, `HoursParked`, `MinutesParked`, `SettlementRef`, `SettlementName`, `SettlementAddr`, `SettlementTIN`, `SettlementBusStyle`) " +
+        "VALUES (NULL, '0', NULL, '"+a+"', '"+b+"', '"+c+"', '"+d+"', '"+e+"', '"+f+"', '"+g+"', '"+h+"', '"+i+"', '"+j+"', '"+k+"', '"+l+"', '"+m+"', '"+n+"', '"+o+"', '"+p+"', '"+q+"', '"+r+"', '"+s+"', '"+t+"', '"+u+"', '"+v+"', '"+w+"', '"+x+"', '"+y+"', '"+z+"')";
+                    System.out.println("ANGELO :" + sql);
+                    String retStr = sh.updateData2Server(SERVER_NAME + "/upload2server.php?sql=", sql, s);
+                    if (null == retStr) {
+                        return;
+                    }
+                    else if (retStr.compareToIgnoreCase("ok") == 0) dbh.updateLDM(EXIT_TABLE_NAME, s);
+                    System.out.println("ANGELO : returned from Server Uploading : " + retStr);
+
+                    //force
+                    dbh.updateLDM(EXIT_TABLE_NAME, s);
+                    data4uploading.moveToNext();
+                }
+
+                //ONLY RETURNS ONE ROW ANYWAYS
+                res.moveToNext();
+            }
+
+
+            //-----------------X Reading Upload 2 Server
+
+            res = dbh.getLastDateData(XREAD_TABLE_NAME);
+            res.moveToFirst();
+
+            while (res.isAfterLast() == false) {
+
+                String ldm = res.getString(res.getColumnIndex(NET_MANAGER_COLUMN_LDM));
+
+                System.out.println("ANGELO : Last Date Modified: " + ldm);
+
+                try {
+                    Date ldm_date = sdf.parse(ldm);
+                    System.out.println("ANGELO : DATE Last Date Modified: " + ldm_date);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                Cursor data4uploading = dbh.getXReadDataForServer(ldm);
+                data4uploading.moveToFirst();
+                while (data4uploading.isAfterLast() == false) {
+                    String a = data4uploading.getString(data4uploading.getColumnIndex("logINID"));
+                    String b = data4uploading.getString(data4uploading.getColumnIndex("SentinelID"));
+                    String c = data4uploading.getString(data4uploading.getColumnIndex("userCode"));
+                    String d = data4uploading.getString(data4uploading.getColumnIndex("userName"));
+                    String e = data4uploading.getString(data4uploading.getColumnIndex("loginStamp"));
+                    String f = data4uploading.getString(data4uploading.getColumnIndex("logoutStamp"));
+                    String g = data4uploading.getString(data4uploading.getColumnIndex("extendedCount"));
+                    String h = data4uploading.getDouble(data4uploading.getColumnIndex("extendedAmount")) + "";
+                    String i = data4uploading.getString(data4uploading.getColumnIndex("overnightCount")) + "";
+                    String j = data4uploading.getDouble(data4uploading.getColumnIndex("overnightAmount")) + "";
+                    String k = data4uploading.getString(data4uploading.getColumnIndex("carServed")) + "";
+                    String l = data4uploading.getString(data4uploading.getColumnIndex("totalCount")) + "";
+                    String m = data4uploading.getDouble(data4uploading.getColumnIndex("totalAmount")) + "";
+                    String n = data4uploading.getString(data4uploading.getColumnIndex("grossCount")) + "";
+                    String o = data4uploading.getDouble(data4uploading.getColumnIndex("grossAmount")) + "";
+                    String p = data4uploading.getString(data4uploading.getColumnIndex("vat12Count")) + "";
+                    String q = data4uploading.getDouble(data4uploading.getColumnIndex("vat12Amount")) + "";
+                    String r = data4uploading.getString(data4uploading.getColumnIndex("vatsaleCount")) + "";
+                    String s = data4uploading.getDouble(data4uploading.getColumnIndex("vatsaleAmount")) + "";
+                    String t = data4uploading.getString(data4uploading.getColumnIndex("vatExemptedSalesCount")) + "";
+                    String u = data4uploading.getDouble(data4uploading.getColumnIndex("vatExemptedSalesAmount")) + "";
+                    String v = data4uploading.getString(data4uploading.getColumnIndex("exemptedVat12Count")) + "";
+                    String w = data4uploading.getDouble(data4uploading.getColumnIndex("exemptedVat12Amount")) + "";
+                    String x = data4uploading.getString(data4uploading.getColumnIndex("pwdDiscountCount")) + "";
+                    String y = data4uploading.getDouble(data4uploading.getColumnIndex("pwdDiscountAmount")) + "";
+                    String z = data4uploading.getString(data4uploading.getColumnIndex("seniorDiscountCount")) + "";
+                    String A = data4uploading.getDouble(data4uploading.getColumnIndex("seniorDiscountAmount")) + "";
+                    String B = data4uploading.getString(data4uploading.getColumnIndex("localseniorDiscountCount")) + "";
+                    String C = data4uploading.getDouble(data4uploading.getColumnIndex("localseniorDiscountAmount")) + "";
+                    String D = data4uploading.getString(data4uploading.getColumnIndex("vatAdjPWDCount")) + "";
+                    String E = data4uploading.getDouble(data4uploading.getColumnIndex("vatAdjPWDAmount")) + "";
+                    String F = data4uploading.getString(data4uploading.getColumnIndex("vatAdjSeniorCount")) + "";
+                    String G = data4uploading.getDouble(data4uploading.getColumnIndex("vatAdjSeniorAmount")) + "";
+                    String H = data4uploading.getString(data4uploading.getColumnIndex("vatAdjLocalSeniorCount")) + "";
+                    String I = data4uploading.getDouble(data4uploading.getColumnIndex("vatAdjLocalSeniorAmount")) + "";
+                    String J = data4uploading.getString(data4uploading.getColumnIndex("vat12PWDCount")) + "";
+                    String K = data4uploading.getDouble(data4uploading.getColumnIndex("vat12PWDAmount")) + "";
+                    String L = data4uploading.getString(data4uploading.getColumnIndex("vat12SeniorCount")) + "";
+                    String M = data4uploading.getDouble(data4uploading.getColumnIndex("vat12SeniorAmount")) + "";
+                    String N = data4uploading.getString(data4uploading.getColumnIndex("vat12LocalSeniorCount")) + "";
+                    String O = data4uploading.getDouble(data4uploading.getColumnIndex("vat12LocalSeniorAmount")) + "";
+                    String P = data4uploading.getString(data4uploading.getColumnIndex("voidsCount")) + "";
+                    String Q = data4uploading.getDouble(data4uploading.getColumnIndex("voidsAmount")) + "";
+                    String R = data4uploading.getString(data4uploading.getColumnIndex("refundCount")) + "";
+                    String S = data4uploading.getDouble(data4uploading.getColumnIndex("refundAmount")) + "";
+                    String T = data4uploading.getString(data4uploading.getColumnIndex("regularCount")) + "";
+                    String U = data4uploading.getDouble(data4uploading.getColumnIndex("regularAmount")) + "";
+                    String V = data4uploading.getString(data4uploading.getColumnIndex("vipCount")) + "";
+                    String W = data4uploading.getDouble(data4uploading.getColumnIndex("vipAmount")) + "";
+                    String X = data4uploading.getString(data4uploading.getColumnIndex("graceperiodCount")) + "";
+                    String Y = data4uploading.getDouble(data4uploading.getColumnIndex("graceperiodAmount")) + "";
+                    String Z = data4uploading.getString(data4uploading.getColumnIndex("lostCount")) + "";
+                    String a1= data4uploading.getDouble(data4uploading.getColumnIndex("lostAmount")) + "";
+                    String b1= data4uploading.getString(data4uploading.getColumnIndex("promoCount")) + "";
+                    String c1 = data4uploading.getDouble(data4uploading.getColumnIndex("promoAmount")) + "";
+                    String d1 = data4uploading.getString(data4uploading.getColumnIndex("localseniorCount")) + "";
+                    String e1 = data4uploading.getDouble(data4uploading.getColumnIndex("localseniorAmount")) + "";
+                    String f1 = data4uploading.getString(data4uploading.getColumnIndex("seniorCount")) + "";
+                    String g1 = data4uploading.getDouble(data4uploading.getColumnIndex("seniorAmount")) + "";
+                    String h1 = data4uploading.getString(data4uploading.getColumnIndex("pwdCount")) + "";
+                    String i1 = data4uploading.getDouble(data4uploading.getColumnIndex("pwdAmount")) + "";
+                    String j1 = data4uploading.getString(data4uploading.getColumnIndex("motorcycleCount")) + "";
+                    String k1 = data4uploading.getDouble(data4uploading.getColumnIndex("motorcycleAmount")) + "";
+                    String l1 = data4uploading.getString(data4uploading.getColumnIndex("jeepCount")) + "";
+                    String m1 = data4uploading.getDouble(data4uploading.getColumnIndex("jeepAmount")) + "";
+                    String n1 = data4uploading.getString(data4uploading.getColumnIndex("tricycleCount")) + "";
+                    String o1 = data4uploading.getDouble(data4uploading.getColumnIndex("tricycleAmount")) + "";
+                    String p1 = data4uploading.getString(data4uploading.getColumnIndex("deliveryCount")) + "";
+                    String q1 = data4uploading.getDouble(data4uploading.getColumnIndex("deliveryAmount")) + "";
+                    String r1 = data4uploading.getString(data4uploading.getColumnIndex("bpoemployeeCount")) + "";
+                    String s1 = data4uploading.getDouble(data4uploading.getColumnIndex("bpoemployeeAmount")) + "";
+                    String t1 = data4uploading.getString(data4uploading.getColumnIndex("employeesCount")) + "";
+                    String u1 = data4uploading.getDouble(data4uploading.getColumnIndex("employeesAmount")) + "";
+                    String v1 = data4uploading.getString(data4uploading.getColumnIndex("tenantsCount")) + "";
+                    String w1 = data4uploading.getDouble(data4uploading.getColumnIndex("tenantsAmount")) + "";
+                    String x1 = data4uploading.getString(data4uploading.getColumnIndex("mabregularCount")) + "";
+                    String y1 = data4uploading.getDouble(data4uploading.getColumnIndex("mabregularAmount")) + "";
+                    String z1 = data4uploading.getString(data4uploading.getColumnIndex("seniormotorCount")) + "";
+                    String A1 = data4uploading.getDouble(data4uploading.getColumnIndex("seniormotorAmount")) + "";
+                    String B1 = data4uploading.getString(data4uploading.getColumnIndex("ambulanceCount")) + "";
+                    String C1 = data4uploading.getDouble(data4uploading.getColumnIndex("ambulanceAmount")) + "";
+                    String D1 = data4uploading.getString(data4uploading.getColumnIndex("inpatientCount")) + "";
+                    String E1 = data4uploading.getDouble(data4uploading.getColumnIndex("inpatientAmount")) + "";
+                    String F1 = data4uploading.getString(data4uploading.getColumnIndex("dialysisCount")) + "";
+                    String G1 = data4uploading.getDouble(data4uploading.getColumnIndex("dialysisAmount")) + "";
+                    String H1 = data4uploading.getString(data4uploading.getColumnIndex("ambulatoryCount")) + "";
+                    String I1 = data4uploading.getDouble(data4uploading.getColumnIndex("ambulatoryAmount")) + "";
+
+                    String sql = "INSERT INTO `colltrain`.`main` (`logINID`, `SentinelID`, `userCode`, `userName`, `loginStamp`, `logoutStamp`, `extendedCount`, `extendedAmount`, `overnightCount`, `overnightAmount`, `carServed`, `totalCount`, `totalAmount`, `grossCount`, `grossAmount`, `vat12Count`, `vat12Amount`, `vatsaleCount`, `vatsaleAmount`, `vatExemptedSalesCount`, `vatExemptedSalesAmount`, `exemptedVat12Count`, `exemptedVat12Amount`, `pwdDiscountCount`, `pwdDiscountAmount`, `seniorDiscountCount`, `seniorDiscountAmount`, `localseniorDiscountCount`, `localseniorDiscountAmount`, `vatAdjPWDCount`, `vatAdjPWDAmount`, `vatAdjSeniorCount`, `vatAdjSeniorAmount`, `vatAdjLocalSeniorCount`, `vatAdjLocalSeniorAmount`, `vat12PWDCount`, `vat12PWDAmount`, `vat12SeniorCount`, `vat12SeniorAmount`, `vat12LocalSeniorCount`, `vat12LocalSeniorAmount`, `voidsCount`, `voidsAmount`, `refundCount`, `refundAmount`, `regularCount`, `regularAmount`, `vipCount`, `vipAmount`, `graceperiodCount`, `graceperiodAmount`, `lostCount`, `lostAmount`, `promoCount`, `promoAmount`, `localseniorCount`, `localseniorAmount`, `seniorCount`, `seniorAmount`, `pwdCount`, `pwdAmount`, `motorcycleCount`, `motorcycleAmount`, `jeepCount`, `jeepAmount`, `tricycleCount`, `tricycleAmount`, `deliveryCount`, `deliveryAmount`, `bpoemployeeCount`, `bpoemployeeAmount`, `employeesCount`, `employeesAmount`, `tenantsCount`, `tenantsAmount`, `mabregularCount`, `mabregularAmount`, `seniormotorCount`, `seniormotorAmount`, `ambulanceCount`, `ambulanceAmount`, `inpatientCount`, `inpatientAmount`, `dialysisCount`, `dialysisAmount`, `ambulatoryCount`, `ambulatoryAmount`) " +
+                            "VALUES ('"+a+"', '"+b+"', '"+c+"', '"+d+"', '"+e+"', '"+f+"', '"+g+"', '"+h+"', '"+i+"', '"+j+"', '"+k+"', '"+l+"', '"+m+"', '"+n+"', '"+o+"', '"+p+"', '"+q+"', '"+r+"', '"+s+"', '"+t+"', '"+u+"', '"+v+"', '"+w+"', '"+x+"','"+y+"', '"+z+"', " +
+                            "'"+A+"', '"+B+"', '"+C+"', '"+D+"', '"+E+"', '"+F+"', '"+G+"', '"+H+"', '"+I+"', '"+J+"', '"+K+"', '"+L+"', '"+M+"', '"+N+"', '"+O+"', '"+P+"', '"+Q+"', '"+R+"', '"+S+"', '"+T+"', '"+U+"', '"+V+"', '"+W+"', '"+X+"','"+Y+"', '"+Z+"', " +
+                            "'"+a1+"', '"+b1+"', '"+c1+"', '"+d1+"', '"+e1+"', '"+f1+"', '"+g1+"', '"+h1+"', '"+i1+"', '"+j1+"', '"+k1+"', '"+l1+"', '"+m1+"', '"+n1+"', '"+o1+"', '"+p1+"', '"+q1+"', '"+r1+"', '"+s1+"', '"+t1+"', '"+u1+"', '"+v1+"', '"+w1+"', '"+x1+"', '"+y1+"', '"+z1+"', " +
+                            "'"+A1+"', '"+B1+"', '"+C1+"', '"+D1+"', '"+E1+"', '"+F1+"', '"+G1+"', '"+H1+"', '"+I1+"');";
+                    System.out.println("ANGELO :" + sql);
+                    String retStr = sh.updateData2Server(SERVER_NAME + "/upload2server.php?sql=", sql, f);
+                    System.out.println("ANGELO :" + retStr);
+                    if (null == retStr) {
+                        return;
+                    }
+                    else if (retStr.compareToIgnoreCase("ok") == 0) dbh.updateLDM(XREAD_TABLE_NAME, f);
+                    System.out.println("ANGELO : returned from Server Uploading : " + retStr);
+                    //FORCE
+                    dbh.updateLDM(XREAD_TABLE_NAME, f);
+                    data4uploading.moveToNext();
+                }
+
+                //ONLY RETURNS ONE ROW ANYWAYS
+                res.moveToNext();
+            }
+
+            //-----------------ZREADING Upload 2 Server
+        }
 
     }
 
@@ -405,7 +657,7 @@ public class ParkingExitActivity extends BaseActivity {
                                     datetimeOUT.setText("");
                                     durationElapsed.setText("");
                                     inputPlate.setText("");
-
+                                    cardNum.setText("");
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }

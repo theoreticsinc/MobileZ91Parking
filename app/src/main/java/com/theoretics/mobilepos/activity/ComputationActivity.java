@@ -778,18 +778,18 @@ public class ComputationActivity extends BaseActivity {
         RECEIPT.getInstance().setDuration(GLOBALS.getInstance().getDuration());
 
         RECEIPT.getInstance().setDiscounted(isDiscounted);
-        RECEIPT.getInstance().setAmountGross(df2.format(ca.AmountGross));
+        RECEIPT.getInstance().setAmountGross(ca.AmountGross + "");
 
         if (isDiscounted || TRType.compareToIgnoreCase("S") == 0) {
-            RECEIPT.getInstance().setVat12(df2.format(ca.vat12));
-            RECEIPT.getInstance().setVatAdjustment(df2.format(ca.vatAdjustment));
-            RECEIPT.getInstance().setNetOfVAT(df2.format(ca.NetOfVAT));
-            RECEIPT.getInstance().setDiscount(df2.format(ca.discount));
-            RECEIPT.getInstance().setNetOfDiscount(df2.format(ca.NetOfVAT - ca.discount));
+            RECEIPT.getInstance().setVat12(ca.vat12 + "");
+            RECEIPT.getInstance().setVatAdjustment(ca.vatAdjustment + "");
+            RECEIPT.getInstance().setNetOfVAT(ca.NetOfVAT + "");
+            RECEIPT.getInstance().setDiscount(ca.discount + "");
+            RECEIPT.getInstance().setNetOfDiscount((ca.NetOfVAT - ca.discount) + "");
 
         } else if (isDiscounted == false) {
-            RECEIPT.getInstance().setVatsale(df2.format(ca.vatsale));
-            RECEIPT.getInstance().setVat12(df2.format(ca.vat12));
+            RECEIPT.getInstance().setVatsale(ca.vatsale + "");
+            RECEIPT.getInstance().setVat12(ca.vat12 + "");
         }
 
         RECEIPT.getInstance().setAmountDue(ca.AmountDue + "");

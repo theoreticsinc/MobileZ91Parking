@@ -55,6 +55,7 @@ import static com.theoretics.mobilepos.util.DBHelper.VIP_COLUMN_NAME;
 import static com.theoretics.mobilepos.util.DBHelper.VIP_COLUMN_PARKERTYPE;
 import static com.theoretics.mobilepos.util.DBHelper.VIP_COLUMN_PLATENUMBER;
 import static com.theoretics.mobilepos.util.DBHelper.VIP_COLUMN_STATUS;
+import static com.theoretics.mobilepos.util.DBHelper.VIP_TABLE_NAME;
 
 public class VIPCardActivity extends BaseActivity {
     private ListView listView;
@@ -509,6 +510,56 @@ public class VIPCardActivity extends BaseActivity {
         }
     }
 
+    public void runNetManager()
+    {
+        Cursor res = null;
+        HttpHandler sh = new HttpHandler(dbh);
+        String pattern = "yyyy-MM-dd hh:mm:ss";
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+
+        //vipDATA[0] = cardID;
+        res = dbh.getLastDateData();
+        if (res == null) {
+            return;
+        }
+        else if (res.getCount() == 0) {
+            Date now = new Date();
+            String n = sdf.format(now);
+            System.out.println(n);
+            n = "2021-01-01 00:00:00";
+            dbh.insertLDCandLDM(VIP_TABLE_NAME, n, n);
+            sh.getNewVIPFromServer(SERVER_NAME + "/vipchecknew.php?from=", n);
+        }
+        else {
+            res.moveToFirst();
+
+            while (res.isAfterLast() == false) {
+
+                String ldc = res.getString(res.getColumnIndex(NET_MANAGER_COLUMN_LDC));
+                String ldm = res.getString(res.getColumnIndex(NET_MANAGER_COLUMN_LDM));
+
+                System.out.println("ANGELO : Last Date Created: " + ldc);
+                System.out.println("ANGELO : Last Date Modified: " + ldm);
+
+                try {
+                    Date ldc_date = sdf.parse(ldc);
+                    Date ldm_date = sdf.parse(ldm);
+
+                    System.out.println("ANGELO : DATE Last Date Created: " + ldc_date);
+                    System.out.println("ANGELO : DATE Last Date Modified: " + ldm_date);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                sh.getNewVIPFromServer(SERVER_NAME + "/vipchecknew.php?from=", ldc);
+                sh.getModifiedVIPFromServer(SERVER_NAME + "/vipcheckmodified.php?from=", ldm);
+
+                res.moveToNext();
+            }
+        }
+
+    }
+
     public void getNewVIPS()
     {
             Cursor res = null;
@@ -526,7 +577,7 @@ public class VIPCardActivity extends BaseActivity {
                     String n = sdf.format(now);
                     System.out.println(n);
                     n = "2021-01-01 00:00:00";
-                    dbh.insertLDCandLDM(n, n);
+                    dbh.insertLDCandLDM(VIP_TABLE_NAME, n, n);
                     sh.getNewVIPFromServer(SERVER_NAME + "/vipchecknew.php?from=", n);
                 }
                 else {

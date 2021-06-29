@@ -42,7 +42,7 @@
             android:textColor="#FFFFFF" />
 
         <EditText
-            android:id="@+id/editTextTextPersonName"
+            android:id="@+id/logoutUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10sp"
@@ -66,7 +66,7 @@
             android:textColor="#FFFFFF" />
 
         <EditText
-            android:id="@+id/editTextTextPassword"
+            android:id="@+id/logoutPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10sp"
@@ -111,9 +111,10 @@
         android:id="@+id/imageView"
         android:layout_width="111dp"
         android:layout_height="91dp"
-        app:srcCompat="@drawable/logout_btn"
-        tools:layout_editor_absoluteX="150dp"
-        tools:layout_editor_absoluteY="-2dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/logout_btn" />
 
 
 </android.support.constraint.ConstraintLayout>
