@@ -1,7 +1,17 @@
 package com.theoretics.mobilepos.bean;
 
+import android.app.ProgressDialog;
+
+import com.android.print.sdk.PrinterInstance;
+import com.theoretics.mobilepos.IPrinterOperation;
+
 public class GLOBALS {
     private static GLOBALS instance;
+
+    private static boolean isConnected;                 //是否已经建立了连接
+    protected static IPrinterOperation myOperation;
+    private PrinterInstance mPrinter;
+    private ProgressDialog dialog;
 
     private boolean newCard = true;
     private String receiptCopyType = "";
@@ -40,6 +50,38 @@ public class GLOBALS {
     private double vatAdjustment = 0;
 
     public GLOBALS(){}
+
+    public static IPrinterOperation getMyOperation() {
+        return myOperation;
+    }
+
+    public static void setMyOperation(IPrinterOperation myOperation) {
+        GLOBALS.myOperation = myOperation;
+    }
+
+    public static boolean isConnected() {
+        return isConnected;
+    }
+
+    public static void setIsConnected(boolean isConnected) {
+        GLOBALS.isConnected = isConnected;
+    }
+
+    public PrinterInstance getmPrinter() {
+        return mPrinter;
+    }
+
+    public void setmPrinter(PrinterInstance mPrinter) {
+        this.mPrinter = mPrinter;
+    }
+
+    public ProgressDialog getDialog() {
+        return dialog;
+    }
+
+    public void setDialog(ProgressDialog dialog) {
+        this.dialog = dialog;
+    }
 
     public boolean isNewCard() {
         return newCard;

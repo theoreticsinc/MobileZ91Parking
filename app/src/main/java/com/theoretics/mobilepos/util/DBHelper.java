@@ -9,16 +9,19 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.theoretics.mobilepos.bean.CONSTANTS;
 import com.theoretics.mobilepos.bean.GLOBALS;
+import com.theoretics.mobilepos.bean.XREADING;
+import com.theoretics.mobilepos.bean.ZREADING;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
 public class DBHelper extends SQLiteOpenHelper {
-
+//
     //public static final String SERVER_NAME = "http://192.168.100.240";
     public static final String SERVER_NAME = "http://192.168.1.80";
     public static final String DATABASE_NAME = "mobilepos.db";
@@ -512,6 +515,156 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
+
+    public void getTodaysXReading() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String SQL = "SELECT userCode, loginStamp, logoutStamp, " +
+                "SUM(ambulanceCount) AS ambulanceCount, " +
+                "SUM(graceperiodCount) AS graceperiodCount, " +
+                "SUM(inpatientCount) AS inpatientCount, " +
+                "SUM(lostCount) AS lostCount, " +
+                "SUM(mabregularCount) AS mabregularCount, " +
+                "SUM(motorcycleCount) AS motorcycleCount, " +
+                "SUM(pwdCount) AS pwdCount, " +
+                "SUM(regularCount) AS regularCount, " +
+                "SUM(seniorCount) AS seniorCount, " +
+                "SUM(vipCount) AS vipCount, " +
+                "SUM(dialysisCount) AS dialysisCount, " +
+                "SUM(pwdDiscountCount) AS pwdDiscountCount, " +
+                "SUM(seniorDiscountCount) AS seniorDiscountCount, " +
+                "SUM(localseniorDiscountCount) AS localseniorDiscountCount, " +
+
+                "SUM(carServed) AS carServed, " +
+
+                "SUM(ambulanceAmount) AS ambulanceAmount, " +
+                "SUM(graceperiodAmount) AS graceperiodAmount, " +
+                "SUM(inpatientAmount) AS inpatientAmount, " +
+                "SUM(lostAmount) AS lostAmount, " +
+                "SUM(mabregularAmount) AS mabregularAmount, " +
+                "SUM(motorcycleAmount) AS motorcycleAmount, " +
+                "SUM(pwdAmount) AS pwdAmount, " +
+                "SUM(regularAmount) AS regularAmount, " +
+                "SUM(seniorAmount) AS seniorAmount, " +
+                "SUM(vipAmount) AS vipAmount, " +
+                "SUM(dialysisAmount) AS dialysisAmount, " +
+                "SUM(pwdDiscountAmount) AS pwdDiscountAmount, " +
+                "SUM(seniorDiscountAmount) AS seniorDiscountAmount, " +
+                "SUM(localseniorDiscountAmount) AS localseniorDiscountAmount, " +
+
+                "SUM(totalAmount) AS totalAmount, " +
+                "SUM(vatsaleAmount) AS vatsaleAmount, " +
+                "SUM(vat12Amount) AS vat12Amount, " +
+                "SUM(grossAmount) AS grossAmount, " +
+                "SUM(totalAmount) AS totalAmount " +
+                " FROM "+ XREAD_TABLE_NAME + " WHERE DATE(logoutStamp) = DATE('now')";
+        Cursor res =  db.rawQuery( SQL, null );
+
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            //data = res.getString(res.getColumnIndex(fieldName));
+
+            XREADING.getInstance().setTeller(res.getString(res.getColumnIndex("userCode")));
+            XREADING.getInstance().setLogInDateTime(res.getString(res.getColumnIndex("loginStamp")));
+            XREADING.getInstance().setLogOutDateTime(res.getString(res.getColumnIndex("logoutStamp")));
+
+            XREADING.getInstance().setAmbulanceCount(res.getInt(res.getColumnIndex("ambulanceCount")));
+            XREADING.getInstance().setGracePeriodCount(res.getInt(res.getColumnIndex("graceperiodCount")));
+            XREADING.getInstance().setInpatientCount(res.getInt(res.getColumnIndex("inpatientCount")));
+            XREADING.getInstance().setLostCount(res.getInt(res.getColumnIndex("lostCount")));
+            XREADING.getInstance().setMABRegularCount(res.getInt(res.getColumnIndex("mabregularCount")));
+            XREADING.getInstance().setMotorcycleCount(res.getInt(res.getColumnIndex("motorcycleCount")));
+            XREADING.getInstance().setPwdCount(res.getInt(res.getColumnIndex("pwdCount")));
+            XREADING.getInstance().setRegularCount(res.getInt(res.getColumnIndex("regularCount")));
+            XREADING.getInstance().setSeniorCount(res.getInt(res.getColumnIndex("seniorCount")));
+            XREADING.getInstance().setVIPCount(res.getInt(res.getColumnIndex("vipCount")));
+            XREADING.getInstance().setDialysisCount(res.getInt(res.getColumnIndex("dialysisCount")));
+            XREADING.getInstance().setPwdDscCount(res.getInt(res.getColumnIndex("pwdDiscountCount")));
+            XREADING.getInstance().setSeniorDscCount(res.getInt(res.getColumnIndex("seniorDiscountCount")));
+            XREADING.getInstance().setLocalSeniorDscCount(res.getInt(res.getColumnIndex("localseniorDiscountCount")));
+            XREADING.getInstance().setCarsServed(res.getInt(res.getColumnIndex("carServed")));
+
+            XREADING.getInstance().setAmbulanceAmount(res.getDouble(res.getColumnIndex("ambulanceAmount")));
+            XREADING.getInstance().setGracePeriodAmount(res.getDouble(res.getColumnIndex("graceperiodAmount")));
+            XREADING.getInstance().setInpatientAmount(res.getDouble(res.getColumnIndex("inpatientAmount")));
+            XREADING.getInstance().setLostAmount(res.getDouble(res.getColumnIndex("lostAmount")));
+            XREADING.getInstance().setMABRegularAmount(res.getDouble(res.getColumnIndex("mabregularAmount")));
+            XREADING.getInstance().setMotorcycleAmount(res.getDouble(res.getColumnIndex("motorcycleAmount")));
+            XREADING.getInstance().setPwdAmount(res.getDouble(res.getColumnIndex("pwdAmount")));
+            XREADING.getInstance().setRegularAmount(res.getDouble(res.getColumnIndex("regularAmount")));
+            XREADING.getInstance().setSeniorAmount(res.getDouble(res.getColumnIndex("seniorAmount")));
+            XREADING.getInstance().setVIPAmount(res.getDouble(res.getColumnIndex("vipAmount")));
+            XREADING.getInstance().setDialysisAmount(res.getDouble(res.getColumnIndex("dialysisAmount")));
+            XREADING.getInstance().setPwdDscAmount(res.getDouble(res.getColumnIndex("pwdDiscountAmount")));
+            XREADING.getInstance().setSeniorDscAmount(res.getDouble(res.getColumnIndex("seniorDiscountAmount")));
+            XREADING.getInstance().setLocalSeniorDscAmount(res.getDouble(res.getColumnIndex("localseniorDiscountAmount")));
+
+            XREADING.getInstance().setTotalAmount(res.getDouble(res.getColumnIndex("totalAmount")));
+            XREADING.getInstance().setVATableSales(res.getDouble(res.getColumnIndex("vatsaleAmount")));
+            XREADING.getInstance().setVAT12(res.getDouble(res.getColumnIndex("vat12Amount")));
+            XREADING.getInstance().setTodaysGrossColl(res.getDouble(res.getColumnIndex("grossAmount")));
+            XREADING.getInstance().setTodaysCollection(res.getDouble(res.getColumnIndex("totalAmount")));
+
+            res.moveToNext();
+        }
+    }
+
+    public void getTodaysZReading() {
+        final DecimalFormat df2 = new DecimalFormat("#0.00");
+        SQLiteDatabase db = this.getReadableDatabase();
+        String SQL = "SELECT datetimeOut, datetimeIn, " +
+                "SUM(todaysale) AS todaysale, " +
+                "SUM(todaysGross) AS todaysGross, " +
+                "SUM(vatablesale) AS vatablesale, " +
+                "SUM(vat) AS vat, " +
+                "SUM(vatExemptedSales) AS vatExemptedSales, " +
+                "MIN(beginOR) AS beginOR, " +
+                "MAX(endOR) AS endOR, " +
+                "MIN(beginTrans) AS beginTrans, " +
+                "MAX(endTrans) AS endTrans, " +
+                "MIN(oldGrand) AS oldGrand, " +
+                "MAX(newGrand) AS newGrand, " +
+                "MIN(oldGrossTotal) AS oldGrossTotal, " +
+                "MAX(newGrossTotal) AS newGrossTotal, " +
+                "SUM(discounts) AS discounts " +
+
+                " FROM "+ ZREAD_TABLE_NAME + " WHERE DATE(datetimeOut) = DATE('now')";
+        Cursor res =  db.rawQuery( SQL, null );
+
+        res.moveToFirst();
+
+        while(res.isAfterLast() == false){
+            //data = res.getString(res.getColumnIndex(fieldName));
+
+            ZREADING.getInstance().setZreadingDate(res.getString(res.getColumnIndex("datetimeOut")));
+//            ZREADING.getInstance().setzCount(res.getString(res.getColumnIndex("zCount")));
+
+            ZREADING.getInstance().setTodaysSales(res.getDouble(res.getColumnIndex("todaysale")));
+            ZREADING.getInstance().setTodaysGross(res.getDouble(res.getColumnIndex("todaysGross")));
+            ZREADING.getInstance().setVatableSales(res.getDouble(res.getColumnIndex("vatablesale")));
+            ZREADING.getInstance().setVat12Sales(res.getDouble(res.getColumnIndex("vat")));
+            ZREADING.getInstance().setVatExemptedSales(res.getDouble(res.getColumnIndex("vatExemptedSales")));
+
+            ZREADING.getInstance().setBeginOR(res.getString(res.getColumnIndex("beginOR")));
+            ZREADING.getInstance().setEndOR(res.getString(res.getColumnIndex("endOR")));
+            ZREADING.getInstance().setBeginTrans(res.getString(res.getColumnIndex("beginTrans")));
+            ZREADING.getInstance().setEndTrans(res.getString(res.getColumnIndex("endTrans")));
+
+            ZREADING.getInstance().setBeginBalance(res.getDouble(res.getColumnIndex("oldGrand")));
+            ZREADING.getInstance().setEndingBalance(res.getDouble(res.getColumnIndex("newGrand")));
+            ZREADING.getInstance().setBeginGross(res.getDouble(res.getColumnIndex("oldGrossTotal")));
+            ZREADING.getInstance().setEndingGross(res.getDouble(res.getColumnIndex("newGrossTotal")));
+
+            res.moveToNext();
+        }
+
+        double beginGross = getOneTransDbl("SELECT grossTotal FROM master", "grossTotal");
+        double beginGrand = getOneTransDbl("SELECT grandTotal FROM master", "grandTotal");
+
+        ZREADING.getInstance().setAccumulatedGross(df2.format(beginGross));
+        ZREADING.getInstance().setAccumulatedGrand(df2.format(beginGrand));
+    }
+
     public boolean insertContact (String cardID, String parkerType, String plateNumber, String name, String cardNumber, String maxUse, String status, String ldc, String ldm) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -777,6 +930,18 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         if (null == data) {
             data = "0";
+        }
+        return data;
+    }
+
+    public double getOneTransDbl(String sql, String column) {
+        double data = 0;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( sql , null );
+        res.moveToFirst();
+        while(res.isAfterLast() == false){
+            data = res.getDouble(res.getColumnIndex(column));
+            res.moveToNext();
         }
         return data;
     }

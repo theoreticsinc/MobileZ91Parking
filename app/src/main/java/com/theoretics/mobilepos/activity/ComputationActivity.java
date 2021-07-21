@@ -1,7 +1,13 @@
 package com.theoretics.mobilepos.activity;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.RemoteException;
 import android.text.Editable;
 import android.text.InputType;
@@ -10,13 +16,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.print.sdk.PrinterConstants;
+import com.theoretics.mobilepos.IPrinterOperation;
 import com.theoretics.mobilepos.R;
-import com.theoretics.mobilepos.bean.RECEIPT;
 import com.theoretics.mobilepos.bean.CONSTANTS;
+import com.theoretics.mobilepos.bean.GLOBALS;
+import com.theoretics.mobilepos.bean.RECEIPT;
+import com.theoretics.mobilepos.bluetooth.BluetoothOperation;
 import com.theoretics.mobilepos.util.ComputeAPI;
 import com.theoretics.mobilepos.util.DBHelper;
-import com.theoretics.mobilepos.bean.GLOBALS;
+import com.theoretics.mobilepos.util.HttpHandler;
+import com.theoretics.mobilepos.util.PrintUtils;
 import com.theoretics.mobilepos.util.ReceiptUtils;
 import com.topwise.cloudpos.aidl.AidlDeviceService;
 import com.topwise.cloudpos.aidl.buzzer.AidlBuzzer;
@@ -28,10 +40,18 @@ import com.topwise.cloudpos.data.PrinterConstant;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Timer;
+
+import static com.theoretics.mobilepos.util.DBHelper.SERVER_NAME;
 
 public class ComputationActivity extends BaseActivity {
 
-    //打印
+    private Context context;
+    private ComputationActivity.MyTask myTask;
+    private String bt_mac;
+    private String bt_name;
+
     private AidlPrinter printerDev = null;
     private AidlDeviceService deviceManager = null;
     private AidlBuzzer iBeeper;
@@ -62,6 +82,7 @@ public class ComputationActivity extends BaseActivity {
 
     private TextView amountDueTV = null;
     private Button confirmBtn = null;
+    private Button testBtn = null;
 
     private boolean isDiscounted = false;
     String TRType = "";
@@ -76,6 +97,7 @@ public class ComputationActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_computation);
+        context = this;
         initView();
     }
 
@@ -107,9 +129,9 @@ public class ComputationActivity extends BaseActivity {
         changeDueTV = findViewById(R.id.change);
         amountDueTV = (TextView) findViewById(R.id.amountDueTV);
         confirmBtn = findViewById(R.id.printBtn);
+        testBtn = findViewById(R.id.testBtn);
 
         tenderInput.setFocusable(true);
-
 
         Intent myIntent = getIntent();
         isDiscounted = myIntent.getBooleanExtra("isDiscounted", false);
@@ -175,6 +197,7 @@ public class ComputationActivity extends BaseActivity {
             computation4.setText("0.00");
             computation5.setText("");
         } else if (TRType.compareToIgnoreCase("V") == 0) {
+
             GLOBALS.getInstance().setpTypeName("VIP");
             isDiscounted = false;
             line1.setText("VATable Sales    :");
@@ -222,14 +245,26 @@ public class ComputationActivity extends BaseActivity {
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (GLOBALS.getInstance().isNewCard() == true) {
-                    printOriginalReceipt();
-                } else {
-                    printDuplicateReceipt();
+                //printText_test1();
+                if (GLOBALS.getInstance().getDatetimeIN().length() > 0) {
+                    if (GLOBALS.getInstance().isNewCard() == true) {
+                        printOriginalReceipt();
+                    } else {
+                        printDuplicateReceipt();
+                    }
                 }
 
             }
         });
+
+        testBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //printText_test1();
+                printBTText("Hello. this is a test...");
+            }
+        });
+
         tenderInput.setInputType(InputType.TYPE_CLASS_NUMBER);
         tenderInput.addTextChangedListener(new TextWatcher() {
             double tender;
@@ -263,6 +298,12 @@ public class ComputationActivity extends BaseActivity {
         rec = new ReceiptUtils();
         rec.initiate(getApplicationContext());
         obj2Print = new ArrayList<PrintItemObj>();
+
+        initDialog();
+        if (null == GLOBALS.getInstance().getMyOperation().getPrinter() || GLOBALS.getInstance().getMyOperation().getPrinter().isConnected() == false) {
+            connClick();
+        }
+
     }
 
     @Override
@@ -326,6 +367,128 @@ public class ComputationActivity extends BaseActivity {
         }
     }
 
+    private void initDialog(){
+        if(GLOBALS.getInstance().getDialog() != null && GLOBALS.getInstance().getDialog().isShowing()){
+            GLOBALS.getInstance().getDialog().dismiss();
+        }
+
+        GLOBALS.getInstance().setDialog(new ProgressDialog(context));
+        GLOBALS.getInstance().getDialog().setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        GLOBALS.getInstance().getDialog().setTitle("Connecting");
+        GLOBALS.getInstance().getDialog().setMessage("Please Wait...");
+        GLOBALS.getInstance().getDialog().setIndeterminate(true);
+        GLOBALS.getInstance().getDialog().setCancelable(false);
+        GLOBALS.getInstance().getDialog().setCanceledOnTouchOutside(false);
+    }
+
+    private void connClick(){
+        if(GLOBALS.getInstance().isConnected()){
+            //GLOBALS.getInstance().getMyOperation().close();
+            //GLOBALS.getInstance().setMyOperation(null);
+            //GLOBALS.getInstance().setmPrinter(null);
+        }else{
+
+            new AlertDialog.Builder(context)
+                    .setTitle(R.string.str_message)
+                    .setMessage(R.string.str_connlast)
+                    .setPositiveButton(R.string.yesconn, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int arg1) {
+                            openConn();
+                        }
+                    })
+                    .setNegativeButton(R.string.str_resel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            resetConn();
+                        }
+                    })
+                    .show();
+
+
+        }
+    }
+
+    private void openConn(){
+        GLOBALS.getInstance().setMyOperation((IPrinterOperation) new BluetoothOperation(context, mHandler));
+        //GLOBALS.getInstance().getMyOperation().btAutoConn(context,  mHandler);
+
+    }
+
+    private void resetConn(){
+        GLOBALS.getInstance().setMyOperation((IPrinterOperation) new BluetoothOperation(context, mHandler));
+        GLOBALS.getInstance().getMyOperation().chooseDevice();
+
+    }
+
+
+    //用于接受连接状态消息的 Handler
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case PrinterConstants.Connect.SUCCESS:
+                    GLOBALS.getInstance().setIsConnected(true);
+                    GLOBALS.getInstance().setmPrinter(GLOBALS.getInstance().getMyOperation().getPrinter());
+                    java.util.Timer timer = new Timer();
+                    myTask = new ComputationActivity.MyTask();
+                    timer.schedule(myTask, 0, 2000);
+                    Toast.makeText(context, R.string.yesconn, Toast.LENGTH_SHORT).show();
+                    break;
+                case PrinterConstants.Connect.FAILED:
+                    if(myTask != null){
+                        myTask.cancel();
+                    }
+                    GLOBALS.getInstance().setIsConnected(false);
+                    Toast.makeText(context, R.string.conn_failed, Toast.LENGTH_SHORT).show();
+                    break;
+                case PrinterConstants.Connect.CLOSED:
+                    if(myTask != null){
+                        myTask.cancel();
+                    }
+                    GLOBALS.getInstance().setIsConnected(false);
+                    Toast.makeText(context, R.string.conn_closed, Toast.LENGTH_SHORT).show();
+                    break;
+
+                default:
+                    break;
+            }
+
+            updateButtonState();
+
+            if (GLOBALS.getInstance().getDialog() != null && GLOBALS.getInstance().getDialog().isShowing()) {
+                GLOBALS.getInstance().getDialog().dismiss();
+            }
+        }
+
+    };
+
+    private class MyTask extends java.util.TimerTask{
+        @Override
+        public void run() {
+            if(GLOBALS.getInstance().isConnected() && GLOBALS.getInstance().getmPrinter() != null) {
+                byte[] by = GLOBALS.getInstance().getmPrinter().read();
+                if (by != null) {
+                    System.out.println(GLOBALS.getInstance().getmPrinter().isConnected() + " read byte " + Arrays.toString(by));
+                }
+            }
+        }
+    }
+
+    private void updateButtonState() {
+        if(!GLOBALS.getInstance().isConnected()){
+            //connectAddress.setText(R.string.no_conn_address);
+            //connectState.setText(R.string.connect);
+            //connectName.setText(R.string.no_conn_name);
+        }else{
+            if( bt_mac!=null && !bt_mac.equals("")){
+                //connectAddress.setText(getString(R.string.str_address)+ bt_mac);
+                //connectState.setText(R.string.disconnect);
+                //connectName.setText(getString(R.string.str_name)+bt_name);
+            }
+        }
+    }
+
     private void printOnly(String text, int fontSize, boolean isBold, PrintItemObj.ALIGN align) {
         obj2Print.clear();
         obj2Print.add(new PrintItemObj(text, fontSize,isBold, align));
@@ -359,6 +522,73 @@ public class ComputationActivity extends BaseActivity {
             e.printStackTrace();
         }
     }
+
+    public void printText_test1()
+    {
+        try {
+            this.printerDev.setPrinterGray(4);
+            printerDev.printText(new ArrayList<PrintItemObj>(){
+                {
+                    //add(new PrintItemObj("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+
+//                    add(new PrintItemObj("--------------------------------",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+//                    add(new PrintItemObj("Name               " + "Qty " + "Rat Amt",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+//                    add(new PrintItemObj("वेज चाऊमीन (नूडल्स) 7 50.0 350.0",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+
+
+//                    add(new PrintItemObj("Dec 30,2018 19:52:53",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+//                    add(new PrintItemObj("Receipt Number:123456",PrinterConstant.FontSize.LARGE,false, PrintItemObj.ALIGN.LEFT));
+//                    add(new PrintItemObj("Token:123-3456-7890",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+//                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+//                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+//                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+//                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+
+                    add(new PrintItemObj("Quittung       27.02.2018 12:01",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("Fahrzeug: RA-SE 907",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("Ordnungs-Nr:907",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("Fanrer:   Peters Rolf",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("TAID:     18000000015",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("Name:",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("Name",PrinterConstant.FontSize.SMALL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("Name",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("name",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("------------------------------------------",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("Von:",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("------------------------------------------",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("Nach:",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("------------------------------------------",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+
+                    add(new PrintItemObj("Total:    9,00 EUR",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("MwST  7%:  0,59 EUR(enth.)",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("MwST.  7%:  0,59 EUR(enth.)",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+                    add(new PrintItemObj("",PrinterConstant.FontSize.NORMAL,false, PrintItemObj.ALIGN.LEFT));
+
+                }
+            }, new AidlPrinterListener.Stub() {
+
+                @Override
+                public void onPrintFinish() throws RemoteException {
+                    //String endTime = getCurTime();
+                    //sendmessage(getStringByid(R.string.print_end) + endTime);
+                }
+
+                @Override
+                public void onError(int arg0) throws RemoteException {
+                    //sendmessage(getStringByid(R.string.print_faile_errcode) + arg0);
+                }
+            });
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
 
     public void printDuplicateReceipt()
     {
@@ -559,7 +789,9 @@ public class ComputationActivity extends BaseActivity {
                     updateXRead();
                     updateGrandTotal(GLOBALS.getInstance().getAmountDue());
                     updateGrossTotal(GLOBALS.getInstance().getAmountGross());
-
+                    DBHelper dbh = new DBHelper(getApplicationContext());
+                    HttpHandler sh = new HttpHandler(dbh);
+                    sh.makeAmbulatory2Server(SERVER_NAME + "/cardAMBExit.php?rfid=", RECEIPT.getInstance().getCardNumber());
                 }
 
                 @Override
@@ -597,8 +829,12 @@ public class ComputationActivity extends BaseActivity {
                     updateXRead();
                     updateGrandTotal(GLOBALS.getInstance().getAmountDue());
                     updateGrossTotal(GLOBALS.getInstance().getAmountGross());
+                    DBHelper dbh = new DBHelper(getApplicationContext());
+                    HttpHandler sh = new HttpHandler(dbh);
+                    sh.makeAmbulatory2Server(SERVER_NAME + "/cardAMBExit.php?rfid=", RECEIPT.getInstance().getCardNumber());
 
                 }
+
             });
 
         } catch (RemoteException e) {
@@ -839,6 +1075,19 @@ public class ComputationActivity extends BaseActivity {
             //sendmessage(getStringByid(R.string.print_end) + endTime);
         }
 
+    }
+
+
+    private void printBTText(String text){
+        if(!GLOBALS.getInstance().isConnected() && GLOBALS.getInstance().getmPrinter() == null) {
+            return;
+        }
+        new Thread(){
+            @Override
+            public void run() {
+                PrintUtils.printBTText(GLOBALS.getInstance().getmPrinter(), "This is a Test");
+            }
+        }.start();
     }
 
 }

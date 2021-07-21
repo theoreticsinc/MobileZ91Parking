@@ -32,6 +32,7 @@ public class XREADING {
 
     private double VATableSales = 0;
     private double VAT12 = 0;
+    private double totalAmount = 0;
     private double todaysCollection = 0;
     private double todaysGrossColl = 0;
     private double totalGrandCollection = 0;
@@ -375,5 +376,13 @@ public class XREADING {
 
     public void setDialysisAmount(double dialysisAmount) {
         this.dialysisAmount = dialysisAmount;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 }

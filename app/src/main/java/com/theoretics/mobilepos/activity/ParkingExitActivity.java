@@ -1,13 +1,21 @@
 package com.theoretics.mobilepos.activity;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.view.KeyEvent;
 import android.view.View;
@@ -16,9 +24,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.print.sdk.PrinterConstants;
+import com.theoretics.mobilepos.IPrinterOperation;
 import com.theoretics.mobilepos.R;
-import com.theoretics.mobilepos.util.DBHelper;
 import com.theoretics.mobilepos.bean.GLOBALS;
+import com.theoretics.mobilepos.bluetooth.BluetoothOperation;
+import com.theoretics.mobilepos.permission.EasyPermission;
+import com.theoretics.mobilepos.util.DBHelper;
 import com.theoretics.mobilepos.util.HexUtil;
 import com.theoretics.mobilepos.util.HttpHandler;
 import com.theoretics.mobilepos.util.NfcAutoCheck;
@@ -39,8 +51,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -51,14 +65,19 @@ import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_PLATE;
 import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_TIMEIN;
 import static com.theoretics.mobilepos.util.DBHelper.CARD_COLUMN_VEHICLE;
 import static com.theoretics.mobilepos.util.DBHelper.EXIT_TABLE_NAME;
-import static com.theoretics.mobilepos.util.DBHelper.NET_MANAGER_COLUMN_LDC;
 import static com.theoretics.mobilepos.util.DBHelper.NET_MANAGER_COLUMN_LDM;
 import static com.theoretics.mobilepos.util.DBHelper.SERVER_NAME;
 import static com.theoretics.mobilepos.util.DBHelper.VIP_TABLE_NAME;
 import static com.theoretics.mobilepos.util.DBHelper.XREAD_TABLE_NAME;
-import static com.theoretics.mobilepos.util.DBHelper.ZREAD_TABLE_NAME;
 
-public class ParkingExitActivity extends BaseActivity {
+public class ParkingExitActivity extends BaseActivity implements EasyPermission.PermissionCallback {
+
+    private Context context;
+
+    public static final int CONNECT_DEVICE = 1;             //选择设备
+    public static final int ENABLE_BT = 2;                  //启动蓝牙
+    public static final int REQUEST_SELECT_FILE = 3;        //选择文件
+    public static final int REQUEST_PERMISSION = 4;         //读写权限
 
     public AidlRFCard rfcard = null;
     private NfcAutoCheck nfcAutoCheck = null;
@@ -88,6 +107,11 @@ public class ParkingExitActivity extends BaseActivity {
     private int hrsRemaining = 0;
     ReceiptUtils rec = null;
 
+    private static boolean isConnected;
+    //private IPrinterOperation myOperation;
+    //private PrinterInstance mPrinter;
+    //private ProgressDialog dialog;
+
     File internalfile;
     File sdfile;
     File sdfileCheck;
@@ -101,7 +125,7 @@ public class ParkingExitActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parking_exit);
-
+        context = this;
         initView();
         dbh = new DBHelper(this);
 
@@ -153,7 +177,7 @@ public class ParkingExitActivity extends BaseActivity {
         switch (keyCode) {
             case 25:
                 Intent intent = new Intent(ParkingExitActivity.this, LogoutActivity.class);
-                intent.putExtra("cardNum",cardNum.getText());
+                //intent.putExtra("cardNum",cardNum.getText());
                 startActivity(intent);
                 return true;
             default:
@@ -195,6 +219,7 @@ public class ParkingExitActivity extends BaseActivity {
         regularBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //printBTText("Test");
                 GLOBALS.getInstance().setPlateNum(inputPlate.getText().toString());
                 GLOBALS.getInstance().setReceiptCopyType("CUSTOMER COPY");
                 Intent intent = new Intent(ParkingExitActivity.this, ComputationActivity.class);
@@ -281,6 +306,47 @@ public class ParkingExitActivity extends BaseActivity {
             }
         },25000,60000 * 5);
 
+        initDialog();
+        //connClick();
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, int resultCode, final Intent data) {
+        switch (requestCode) {
+            case CONNECT_DEVICE:
+                if (resultCode == Activity.RESULT_OK) {
+                    //GLOBALS.getInstance().getDialog().show();
+                    new Thread(new Runnable(){
+                        public void run() {
+                            GLOBALS.getInstance().getMyOperation().open(data);
+                        }
+                    }).start();
+                }
+                break;
+            case ENABLE_BT:
+                if (resultCode == Activity.RESULT_OK){
+                    GLOBALS.getInstance().getMyOperation().chooseDevice();
+                }else{
+                    Toast.makeText(this, R.string.bt_not_enabled, Toast.LENGTH_SHORT).show();
+                }
+        }
+    }
+
+    private void openConn(){
+        if (!isConnected) {
+            //myOperation = new BluetoothOperation(ParkingExitActivity.this, mHandler);
+            //myOperation.chooseDevice();
+            GLOBALS.getInstance().setMyOperation((IPrinterOperation) new BluetoothOperation(context, mHandler));
+            //GLOBALS.getInstance().getMyOperation().btAutoConn(context,  mHandler);
+            GLOBALS.getInstance().getMyOperation().chooseDevice();
+        }
+
+    }
+
+    private void resetConn(){
+        GLOBALS.getInstance().setMyOperation((IPrinterOperation) new BluetoothOperation(context, mHandler));
+        GLOBALS.getInstance().getMyOperation().chooseDevice();
+
     }
 
     public void runNetManager()
@@ -360,10 +426,7 @@ String sql = "INSERT INTO `carpark`.`exit_trans` (`pkid`, `void`, `voidRefID`, `
         "VALUES (NULL, '0', NULL, '"+a+"', '"+b+"', '"+c+"', '"+d+"', '"+e+"', '"+f+"', '"+g+"', '"+h+"', '"+i+"', '"+j+"', '"+k+"', '"+l+"', '"+m+"', '"+n+"', '"+o+"', '"+p+"', '"+q+"', '"+r+"', '"+s+"', '"+t+"', '"+u+"', '"+v+"', '"+w+"', '"+x+"', '"+y+"', '"+z+"')";
                     System.out.println("ANGELO :" + sql);
                     String retStr = sh.updateData2Server(SERVER_NAME + "/upload2server.php?sql=", sql, s);
-                    if (null == retStr) {
-                        return;
-                    }
-                    else if (retStr.compareToIgnoreCase("ok") == 0) dbh.updateLDM(EXIT_TABLE_NAME, s);
+
                     System.out.println("ANGELO : returned from Server Uploading : " + retStr);
 
                     //force
@@ -492,11 +555,6 @@ String sql = "INSERT INTO `carpark`.`exit_trans` (`pkid`, `void`, `voidRefID`, `
                             "'"+A1+"', '"+B1+"', '"+C1+"', '"+D1+"', '"+E1+"', '"+F1+"', '"+G1+"', '"+H1+"', '"+I1+"');";
                     System.out.println("ANGELO :" + sql);
                     String retStr = sh.updateData2Server(SERVER_NAME + "/upload2server.php?sql=", sql, f);
-                    System.out.println("ANGELO :" + retStr);
-                    if (null == retStr) {
-                        return;
-                    }
-                    else if (retStr.compareToIgnoreCase("ok") == 0) dbh.updateLDM(XREAD_TABLE_NAME, f);
                     System.out.println("ANGELO : returned from Server Uploading : " + retStr);
                     //FORCE
                     dbh.updateLDM(XREAD_TABLE_NAME, f);
@@ -527,6 +585,7 @@ String sql = "INSERT INTO `carpark`.`exit_trans` (`pkid`, `void`, `voidRefID`, `
         //
         //durationElapsed.setText(rec.getExternalFilesDir(getApplicationContext()));
         //rec.appendToFile("ANGELO");
+        openConn();
     }
 
     @Override
@@ -807,6 +866,238 @@ String sql = "INSERT INTO `carpark`.`exit_trans` (`pkid`, `void`, `voidRefID`, `
         getJSON.execute();
         return "";
     }
+
+
+    private void connClick(){
+        if(GLOBALS.getInstance().isConnected()){
+            GLOBALS.getInstance().getMyOperation().close();
+            GLOBALS.getInstance().setMyOperation(null);
+            GLOBALS.getInstance().setmPrinter(null);
+        }else{
+
+            new AlertDialog.Builder(context)
+                    .setTitle(R.string.str_message)
+                    .setMessage(R.string.str_connlast)
+                    .setPositiveButton(R.string.yesconn, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int arg1) {
+                            openConn();
+                        }
+                    })
+                    .setNegativeButton(R.string.str_resel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            resetConn();
+                        }
+                    })
+                    .show();
+
+
+        }
+    }
+
+    private void tipUpdate(final String filePath){
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setTitle("提示")
+                .setMessage(filePath + "\n请确认打印机版本是否支持")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        printUpdate(filePath);
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .setCancelable(false)
+                .create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+    }
+
+    private ParkingExitActivity.MyTask myTask;
+
+    /**
+     * wifi机器需要定时读取打印机数据, 如下代码
+     * 当连接断开时, 读取数据 read() 会触发断开连接的消息
+     *
+     * USB 蓝牙 可忽略
+     */
+    private class MyTask extends java.util.TimerTask{
+        @Override
+        public void run() {
+            if(GLOBALS.getInstance().isConnected() && GLOBALS.getInstance().getmPrinter() != null) {
+                byte[] by = GLOBALS.getInstance().getmPrinter().read();
+                if (by != null) {
+                    System.out.println(GLOBALS.getInstance().getmPrinter().isConnected() + " read byte " + Arrays.toString(by));
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 更新界面状态
+     */
+    private void updateButtonState() {
+        if(!GLOBALS.getInstance().isConnected()){
+            //connectAddress.setText(R.string.no_conn_address);
+            //connectState.setText(R.string.connect);
+            //connectName.setText(R.string.no_conn_name);
+        }else{
+            if( bt_mac!=null && !bt_mac.equals("")){
+                //connectAddress.setText(getString(R.string.str_address)+ bt_mac);
+                //connectState.setText(R.string.disconnect);
+                //connectName.setText(getString(R.string.str_name)+bt_name);
+            }else if(bt_mac==null ) {
+                //bt_mac= BluetoothPort.getmDeviceAddress();
+                //bt_name=BluetoothPort.getmDeviceName();
+                //connectAddress.setText(getString(R.string.str_address)+bt_mac);
+                //connectState.setText(R.string.disconnect);
+                //connectName.setText(getString(R.string.str_name)+bt_name);
+            }
+        }
+    }
+
+    private void initDialog(){
+        GLOBALS.getInstance().setDialog(new ProgressDialog(context));
+        GLOBALS.getInstance().getDialog().setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        GLOBALS.getInstance().getDialog().setTitle("Connecting...");
+        GLOBALS.getInstance().getDialog().setMessage("Please Wait...");
+        GLOBALS.getInstance().getDialog().setIndeterminate(true);
+        GLOBALS.getInstance().getDialog().setCancelable(false);
+        //GLOBALS.getInstance().setDialog(dialog);
+    }
+
+    private void printBTText(String text){
+        if(!GLOBALS.getInstance().isConnected() && GLOBALS.getInstance().getmPrinter() == null) {
+            return;
+        }
+        new Thread(){
+            @Override
+            public void run() {
+                //PrintUtils.printBTText(GLOBALS.getInstance().getmPrinter(), "This is a Test");
+            }
+        }.start();
+    }
+
+    private void printUpdate(final String filePath){
+        if(!GLOBALS.getInstance().isConnected() && GLOBALS.getInstance().getmPrinter() == null) {
+            return;
+        }
+        GLOBALS.getInstance().getDialog().setTitle(null);
+        GLOBALS.getInstance().getDialog().setMessage("正在升级, 请稍后...");
+        GLOBALS.getInstance().getDialog().show();
+        new Thread(){
+            @Override
+            public void run() {
+                //PrintUtils.printUpdate(context.getResources(), GLOBALS.getInstance().getmPrinter(), filePath);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(context, "数据已发送, 请等待打开机升级完成", Toast.LENGTH_LONG).show();
+                        initDialog();
+                    }
+                });
+            }
+        }.start();
+
+    }
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case PrinterConstants.Connect.SUCCESS:
+                    isConnected = true;
+                    GLOBALS.getInstance().setmPrinter(GLOBALS.getInstance().getMyOperation().getPrinter());
+                    break;
+                case PrinterConstants.Connect.FAILED:
+                    isConnected = false;
+                    Toast.makeText(context, "connect failed...", Toast.LENGTH_SHORT).show();
+                    break;
+                case PrinterConstants.Connect.CLOSED:
+                    isConnected = false;
+                    Toast.makeText(context, "connect close...", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+
+            //updateButtonState();
+
+            if (GLOBALS.getInstance().getDialog() != null && GLOBALS.getInstance().getDialog().isShowing()) {
+                GLOBALS.getInstance().getDialog().dismiss();
+            }
+        }
+
+    };
+
+
+    private String bt_mac;
+    private String bt_name;
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermission.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
+    }
+
+    //SD卡读写权限
+    String[] permisions = new String[]{
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+    };
+
+    private boolean hasSDcardPermissions() {
+        //判断是否有权限
+        if (EasyPermission.hasPermissions(context, permisions)) {
+            return true;
+        } else {
+            EasyPermission.with(this)
+                    .rationale("选择文件需要SDCard读写权限")
+                    .addRequestCode(REQUEST_PERMISSION)
+                    .permissions(permisions)
+                    .request();
+        }
+        return false;
+    }
+
+    private void startSelectFile(){
+        if(!GLOBALS.getInstance().isConnected() && GLOBALS.getInstance().getmPrinter() == null) {
+            return;
+        }
+
+        if(hasSDcardPermissions()){
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("*/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(intent, REQUEST_SELECT_FILE);
+        }
+    }
+
+    //有权限
+    @Override
+    public void onPermissionGranted(int requestCode, List<String> perms) {
+        startSelectFile();
+    }
+
+
+    //没有权限
+    @Override
+    public void onPermissionDenied(int requestCode, List<String> perms) {
+
+        // 是否用户拒绝,不在提示
+        boolean isAskAgain = EasyPermission.checkDeniedPermissionsNeverAskAgain(
+                this,
+                "选择文件需要开启权限，请在应用设置开启权限。",
+                R.string.gotoSettings, R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                }, perms);
+    }
+
 
     private HashMap<String, String> grabCardFromServer(DBHelper dbh, String msg) {
         //String url = "http://api.androidhive.info/contacts/";
