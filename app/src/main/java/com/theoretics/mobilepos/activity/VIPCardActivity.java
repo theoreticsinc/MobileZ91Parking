@@ -162,7 +162,7 @@ public class VIPCardActivity extends BaseActivity {
         },5000,60000 * 2);
 
         txt_log = (TextView)findViewById(R.id.status);
-        tv_cardNumber = (TextView)findViewById(R.id.loginUsername);
+        tv_cardNumber = (TextView)findViewById(R.id.cardNumber);
         tv_plateNumber = (TextView) findViewById(R.id.loginPassword);
         tv_vipName = (TextView) findViewById(R.id.vipName);
         tv_vipType = (TextView) findViewById(R.id.vipType);
@@ -175,6 +175,7 @@ public class VIPCardActivity extends BaseActivity {
         //    }
         //});
         //((TextView)findViewById(R.id.header_title)).setText(title);
+
     }
 
     private void setOnCheckListen()

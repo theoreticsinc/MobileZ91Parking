@@ -25,8 +25,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 	public static final int SHOW_MSG = 0;
     private static final String TAG = "TPW-BaseTestActivity";
 
-	public static final String TOPWISE_SERVICE_ACTION = "topwise_cloudpos_device_service";
-
 	private int showLineNum = 0;
 
 	private LinearLayout linearLayout;
@@ -61,17 +59,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 	public EditText et_name;
 
 	//绑定服务
-	public void bindService(){
-		Intent intent = new Intent();
-		intent.setAction(TOPWISE_SERVICE_ACTION);
-		final Intent eintent = new Intent(createExplicitFromImplicitIntent(this,intent));
-		boolean flag = bindService(eintent, conn, Context.BIND_AUTO_CREATE);
-		if(flag){
-            Log.d(TAG,"服务绑定成功");
-		}else{
-            Log.d(TAG,"服务绑定失败");
-		}
-	}
+
 
 
 	private Handler handler = new Handler() {
@@ -96,7 +84,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 	protected void onResume() {
 		// TODO Auto-generated method stub
 		super.onResume();
-		bindService();
 	}
 
 
@@ -117,7 +104,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		this.unbindService(conn);
 	}
 	/**
 	 * 服务连接成功时回调

@@ -19,6 +19,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.print.sdk.PrinterConstants;
+import com.imagpay.SwipeEvent;
+import com.imagpay.SwipeListener;
+import com.imagpay.enums.CardDetected;
+import com.imagpay.enums.EmvStatus;
+import com.imagpay.enums.PrintStatus;
 import com.theoretics.mobilepos.IPrinterOperation;
 import com.theoretics.mobilepos.R;
 import com.theoretics.mobilepos.bean.CONSTANTS;
@@ -45,7 +50,8 @@ import java.util.Timer;
 
 import static com.theoretics.mobilepos.util.DBHelper.SERVER_NAME;
 
-public class ComputationActivity extends BaseActivity {
+public class ComputationActivity extends BaseActivity implements
+        com.theoretics.ui.MyPagerAdapter.notify, SwipeListener {
 
     private Context context;
     private ComputationActivity.MyTask myTask;
@@ -462,6 +468,41 @@ public class ComputationActivity extends BaseActivity {
         }
 
     };
+
+    @Override
+    public void onDisconnected(SwipeEvent swipeEvent) {
+
+    }
+
+    @Override
+    public void onConnected(SwipeEvent swipeEvent) {
+
+    }
+
+    @Override
+    public void onParseData(SwipeEvent swipeEvent) {
+
+    }
+
+    @Override
+    public void onCardDetect(CardDetected cardDetected) {
+
+    }
+
+    @Override
+    public void onPrintStatus(PrintStatus printStatus) {
+
+    }
+
+    @Override
+    public void onEmvStatus(EmvStatus emvStatus) {
+
+    }
+
+    @Override
+    public void onItemClick(int position) {
+
+    }
 
     private class MyTask extends java.util.TimerTask{
         @Override

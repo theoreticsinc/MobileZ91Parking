@@ -35,7 +35,7 @@ public class LoginActivity extends AppCompatActivity{
     }
 
     private void initView() {
-        loginUsername = (EditText) findViewById(R.id.loginUsername);
+        loginUsername = (EditText) findViewById(R.id.cardNumber);
         loginPassword = (EditText) findViewById(R.id.loginPassword);
 
         loginBtn = (ImageButton) findViewById(R.id.logINBtn);
