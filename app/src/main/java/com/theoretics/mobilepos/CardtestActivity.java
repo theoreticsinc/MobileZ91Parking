@@ -102,7 +102,7 @@ public class CardtestActivity extends BaseActivity implements TransListener {
 			@Override
 			public void onParseData(SwipeEvent event) {
 				sendMessage("onParseData:" + event.getValue());
-
+                readCardID();
 			}
 
 			@Override
