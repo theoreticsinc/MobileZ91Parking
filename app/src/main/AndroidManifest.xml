@@ -76,7 +76,7 @@
 
         </activity>
         <activity
-            android:name=".activity.PrinterTest"
+            android:name=".activity.PrintersTestActivity"
             android:label="@string/title_activity_parking_exit"
             android:theme="@style/AppTheme.NoActionBar">
 
@@ -128,6 +128,7 @@
             android:name="com.theoretics.mobilepos.MainActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

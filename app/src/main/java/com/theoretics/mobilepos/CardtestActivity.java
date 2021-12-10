@@ -38,25 +38,24 @@ import static com.theoretics.util.DBHelper.CONTACTS_COLUMN_STATUS;
 public class CardtestActivity extends BaseActivity implements TransListener {
 
 	final static String TAG = "xtztt";
+	final Cursor[] res = {null};
+	final String[] vipDATA = {"","","","", ""};
+	private final int showReadDailog = 101;
+	private final int showPrintDailog = 99;
+	private final int dismissDailog = 100;
+	protected boolean isprinttest;
+	MposHandler handler;
+	NFCEmvHandler nfc;
+	Settings settings;
+	Context mctx;
 	private TextView tv_text;
 	private TextView tv_cardNumber;
 	private TextView tv_vipName, tv_vipStatus;
 	private TextView tv_vipType;
 	private TextView tv_plateNumber;
 	private MessageHandler msghandler;
-	MposHandler handler;
-	NFCEmvHandler nfc;
-	Settings settings;
-	Context mctx;
 	private DBHelper dbh;
 	private ProgressDialog dialog;
-	protected boolean isprinttest;
-	private final int showReadDailog = 101;
-	private final int showPrintDailog = 99;
-	private final int dismissDailog = 100;
-
-	final String[] vipDATA = {"","","","", ""};
-
 	Handler mhandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -102,20 +101,25 @@ public class CardtestActivity extends BaseActivity implements TransListener {
 
 			@Override
 			public void onParseData(SwipeEvent event) {
-				// sendMessage("onParseData:" + event.getValue());
+				sendMessage("onParseData:" + event.getValue());
+
 			}
 
 			@Override
 			public void onDisconnected(SwipeEvent event) {
+				sendMessage("onDisconnected:" + event.getValue());
+
 			}
 
 			@Override
 			public void onConnected(SwipeEvent event) {
+				sendMessage("onConnected:" + event.getValue());
 			}
 
 			@Override
 			public void onCardDetect(CardDetected type) {
 				sendMessage("ANGELO: CARD Detected......");
+				//readCardID();
 			}
 
 			@Override
@@ -141,8 +145,10 @@ public class CardtestActivity extends BaseActivity implements TransListener {
 		});
 
 		// add
-		nfc = NFCEmvHandler.getInstance(this);
-		nfc.addTransListener(this);
+		//nfc = NFCEmvHandler.getInstance(this);
+		//nfc.addTransListener(this);
+
+		readCardID();
 
 	}
 
@@ -211,14 +217,28 @@ public class CardtestActivity extends BaseActivity implements TransListener {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
+				while (true) {
 				// sendMessage(settings.m1ReadSec("ffffffffffff", "00"));
 				handler.setShowLog(true);
 				String cardID = settings.m1Request();
-				sendMessage(cardID.toUpperCase());
-				vipDATA[0] = cardID.toUpperCase();
+				vipDATA[0] = "";
+				if (null != cardID) {
+					sendMessage(cardID.toUpperCase());
+					vipDATA[0] = cardID.toUpperCase();
+				}
 				//
 				//
 				if (vipDATA[0].compareToIgnoreCase("") == 0) {
+					vipDATA[1] = "";
+					vipDATA[2] = "";
+					vipDATA[3] = "";
+					vipDATA[4] = "";
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							showData();
+						}
+					});
 					return;
 				}
 				res[0] = dbh.getCardData(vipDATA[0].toUpperCase());
@@ -264,6 +284,7 @@ public class CardtestActivity extends BaseActivity implements TransListener {
 						showData();
 					}
 				});
+			}
 			}
 		}).start();
 
@@ -395,8 +416,8 @@ public class CardtestActivity extends BaseActivity implements TransListener {
 
 	private class AsyncCheckDB extends AsyncTask<String, String, String> {
 
-		private String resp;
 		ProgressDialog progressDialog;
+		private String resp;
 
 		@SuppressLint("WrongThread")
 		@Override

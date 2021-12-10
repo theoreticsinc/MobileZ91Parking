@@ -19,6 +19,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.print.sdk.PrinterConstants;
+import com.android.print.sdk.PrinterInstance;
 import com.imagpay.PrnStrFormat;
 import com.imagpay.Settings;
 import com.imagpay.SwipeEvent;
@@ -30,7 +32,12 @@ import com.imagpay.enums.PrintStatus;
 import com.imagpay.enums.PrnTextFont;
 import com.imagpay.mpos.MposHandler;
 import com.theoretics.mobilepos.CardtestActivity;
+import com.theoretics.mobilepos.IPrinterOperation;
 import com.theoretics.mobilepos.R;
+import com.theoretics.mobilepos.bluetooth.BluetoothOperation;
+import com.theoretics.mobilepos.usb.UsbOperation;
+import com.theoretics.mobilepos.util.PrintUtils;
+import com.theoretics.mobilepos.wifi.WifiOperation;
 import com.theoretics.ui.ImageInfo;
 import com.theoretics.ui.MyPagerAdapter;
 import com.theoretics.util.DBHelper;
@@ -45,12 +52,26 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrinterTest extends Activity implements
+public class PrintersTestActivity extends Activity implements
         com.theoretics.ui.MyPagerAdapter.notify, SwipeListener {
     ArrayList<ImageInfo> data;
+
+    private Context mContext;
     private static TextView mynum;
     MyPagerAdapter adapter;
     Button btn;
+
+    private boolean showUSB; //before android3.0 don't show usb
+    private static boolean isConnected;
+    private IPrinterOperation myOpertion;
+    private PrinterInstance mPrinter;
+
+    private ProgressDialog dialog;
+
+    // Intent request codes
+    public static final int CONNECT_DEVICE = 1;
+    public static final int ENABLE_BT = 2;
+    private int currIndex = 0;//  0--bluetooth,1--wifi,2--usb
 
     /**** SDK ***/
     private static String TAG = "TheoreticsPOS";
@@ -70,25 +91,63 @@ public class PrinterTest extends Activity implements
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 101:
-                    Toast.makeText(com.theoretics.mobilepos.activity.PrinterTest.this,
+                case PrinterConstants.Connect.SUCCESS:
+                    isConnected = true;
+                    mPrinter = myOpertion.getPrinter();
+                    Toast.makeText(PrintersTestActivity.this,
                             "Printing now,pls wait for a moment", Toast.LENGTH_LONG)
                             .show();
                     break;
-
+                case PrinterConstants.Connect.FAILED:
+                    isConnected = false;
+                    Toast.makeText(mContext, "connect failed...", Toast.LENGTH_SHORT).show();
+                    break;
+                case PrinterConstants.Connect.CLOSED:
+                    isConnected = false;
+                    Toast.makeText(mContext, "connect close...", Toast.LENGTH_SHORT).show();
+                    break;
                 default:
                     break;
+            }
+            if (dialog != null && dialog.isShowing()) {
+                dialog.dismiss();
             }
         }
 
         ;
     };
 
+
+    private void openConn(){
+        if (!isConnected) {
+            switch (currIndex) {
+                case 0: // bluetooth
+                    myOpertion = new BluetoothOperation(PrintersTestActivity.this, mHandler);
+                    break;
+                case 1: // wifi
+                    myOpertion = new WifiOperation(PrintersTestActivity.this, mHandler);
+                    break;
+                case 2: // usb
+                    myOpertion = new UsbOperation(PrintersTestActivity.this, mHandler);
+                    break;
+                default:
+                    break;
+            }
+            myOpertion.chooseDevice();
+        } else {
+            myOpertion.close();
+            myOpertion = null;
+            mPrinter = null;
+        }
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parking_exit);//activity_main
         mynum = (TextView) findViewById(R.id.mynum);
+        mContext = this;
         initData();
         /*
         ViewPager vpager = (ViewPager) findViewById(R.id.vPager);
@@ -129,6 +188,7 @@ public class PrinterTest extends Activity implements
         String password = resultSet.getString(1);
 */
         initView();
+        openConn();
     }
 
     /**** SDK ***/
@@ -162,7 +222,6 @@ public class PrinterTest extends Activity implements
         handler.setShowLog(true);
     }
 
-
     private void initView() {
         regularBtn = (Button) findViewById(R.id.regularBtn);
         vipBtn = (Button) findViewById(R.id.vipBtn);
@@ -172,7 +231,7 @@ public class PrinterTest extends Activity implements
             public void onClick(View view) {
                 //printBTText("Test");
 
-                Intent intent = new Intent(PrinterTest.this, VIPCardActivity.class);
+                Intent intent = new Intent(PrintersTestActivity.this, VIPCardActivity.class);
                 startActivity(intent);
             }
         });
@@ -180,7 +239,7 @@ public class PrinterTest extends Activity implements
         pwdSeniorBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                openConn();
             }
         });
         vipBtn.setOnClickListener(new View.OnClickListener() {
@@ -193,6 +252,7 @@ public class PrinterTest extends Activity implements
             @Override
             public void onClick(View view) {
             printOut();
+            printBTOut();
             }
         });
 
@@ -221,7 +281,7 @@ public class PrinterTest extends Activity implements
                 setting.mposLedSwitch(PosLED.LED_RED, false);
                 setting.mposLedSwitch(PosLED.LED_GREEN, true);
                 setting.mposLedSwitch(PosLED.LED_BLUE, false);
-                startActivity(new Intent(com.theoretics.mobilepos.activity.PrinterTest.this, CardtestActivity.class));
+                startActivity(new Intent(PrintersTestActivity.this, CardtestActivity.class));
                 break;
             case 2:
                 setting.mposLedSwitch(PosLED.LED_RED, false);
@@ -268,6 +328,37 @@ public class PrinterTest extends Activity implements
                 setting.prnStart();
             }
         }).start();
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, int resultCode, final Intent data) {
+        switch (requestCode) {
+            case CONNECT_DEVICE:
+                if (resultCode == Activity.RESULT_OK) {
+                    //dialog.show();
+                    new Thread(new Runnable(){
+                        public void run() {
+                            myOpertion.open(data);
+                        }
+                    }).start();
+                }
+                break;
+            case ENABLE_BT:
+                if (resultCode == Activity.RESULT_OK){
+                    myOpertion.chooseDevice();
+                }else{
+                    Toast.makeText(this, R.string.bt_not_enabled, Toast.LENGTH_SHORT).show();
+                }
+        }
+    }
+
+    private void printBTOut() {
+        if (null != myOpertion) {
+            mPrinter = myOpertion.getPrinter();
+            PrintUtils.printText(mContext.getResources(), mPrinter);
+        } else {
+            openConn();
+        }
     }
 
     private void printOut() {
@@ -629,7 +720,7 @@ public class PrinterTest extends Activity implements
 
     private void showInfor(String ver, String sn) {
         final AlertDialog.Builder normalDialog = new AlertDialog.Builder(
-                com.theoretics.mobilepos.activity.PrinterTest.this);
+                PrintersTestActivity.this);
         normalDialog.setTitle(""
                 + getResources().getString(R.string.device_information));
 
@@ -677,7 +768,7 @@ public class PrinterTest extends Activity implements
 
         @Override
         protected void onPreExecute() {
-            progressDialog = ProgressDialog.show(com.theoretics.mobilepos.activity.PrinterTest.this,
+            progressDialog = ProgressDialog.show(PrintersTestActivity.this,
                     "Init Database...",
                     "Wait for " + mynum.getText().toString() + " seconds");
         }
@@ -782,7 +873,7 @@ public class PrinterTest extends Activity implements
 
         @Override
         protected void onPreExecute() {
-            progressDialog = ProgressDialog.show(com.theoretics.mobilepos.activity.PrinterTest.this,
+            progressDialog = ProgressDialog.show(PrintersTestActivity.this,
                     "Checking Card...",
                     "Wait for " + mynum.getText().toString() + " seconds");
         }

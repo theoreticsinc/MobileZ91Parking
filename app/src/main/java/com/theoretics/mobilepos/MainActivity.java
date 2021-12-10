@@ -34,6 +34,7 @@ import com.imagpay.enums.PosLED;
 import com.imagpay.enums.PrintStatus;
 import com.imagpay.enums.PrnTextFont;
 import com.imagpay.mpos.MposHandler;
+import com.theoretics.mobilepos.activity.PrintersTestActivity;
 import com.theoretics.ui.ImageInfo;
 import com.theoretics.ui.MyPagerAdapter;
 import com.theoretics.util.DBHelper;
@@ -182,9 +183,10 @@ public class MainActivity extends Activity implements
 				//AsyncDataInit runDB = new AsyncDataInit();
 				//String sleepTime = "60";
 				//runDB.execute(sleepTime);
+                startActivity(new Intent(MainActivity.this, PrintersTestActivity.class));
 
-				//printTicket();
-				printOut();
+                //printTicket();
+				//printOut();
 				// printTicket();
 				// printtext();
 				// printGeorgianText();
